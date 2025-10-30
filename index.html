@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Terminal Codes — Demo</title>
+<title>Terminal Codes — Demo (Magikán Messages)</title>
 <style>
 :root {
   --bg:#000; --text:#0f0; --muted:#3a3; --panel:#061;
@@ -15,8 +15,8 @@ html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-famil
 .logo{font-weight:700;font-size:18px;}
 .panel{flex:1;display:flex;gap:12px;margin-top:12px;}
 .terminal{flex:1;background:#010201;border-radius:8px;padding:12px;box-shadow:0 8px 24px rgba(0,0,0,.6);display:flex;flex-direction:column;}
-.log{flex:1;overflow:auto;padding:6px;border-radius:6px;background:linear-gradient(180deg,#001000 0,#001400 100%)}
-.log p{margin:6px 0;line-height:1.35}
+.log{flex:1;overflow:auto;padding:10px;border-radius:6px;background:linear-gradient(180deg,#001000 0,#001400 100%)}
+.log p{margin:6px 0;line-height:1.45}
 .input-row{display:flex;gap:8px;margin-top:8px}
 .cmd{flex:1;background:transparent;border:1px solid #083;outline:none;padding:10px;color:var(--text);font-family:var(--font);font-size:14px;border-radius:6px}
 .btn{background:#063;border:0;padding:10px 12px;border-radius:6px;color:var(--text);cursor:pointer}
@@ -39,6 +39,7 @@ input, select{background:#001100;color:#0f0;border:1px solid #083;padding:6px;ma
 button{margin-top:6px;}
 table{width:100%;border-collapse:collapse;margin-top:8px;}
 th,td{border:1px solid #033;padding:4px;text-align:left;}
+.code-value{white-space:pre-wrap;color:#bdf;}
 </style>
 </head>
 <body>
@@ -53,7 +54,7 @@ th,td{border:1px solid #033;padding:4px;text-align:left;}
     <div class="terminal">
       <div id="log" class="log"></div>
       <div class="input-row">
-        <input id="cmdInput" class="cmd" placeholder="zadej kód nebo příkaz" autocomplete="off"/>
+        <input id="cmdInput" class="cmd" placeholder="zadej kód nebo příkaz (HELP)" autocomplete="off"/>
         <button id="sendBtn" class="btn">OK</button>
       </div>
     </div>
@@ -62,7 +63,7 @@ th,td{border:1px solid #033;padding:4px;text-align:left;}
       <div class="stat">Body: <strong id="points">0</strong></div>
       <div class="stat">Použité kódy: <span id="usedCount">0</span></div>
       <div class="hint">HELP, RESET, MYCODES</div>
-      <footer>Verze 0.5</footer>
+      <footer>Verze 0.6 — magikán messages</footer>
     </div>
   </div>
 </div>
@@ -126,11 +127,21 @@ let codes=JSON.parse(localStorage.getItem(SK_CODES)||'{}');
 function savePlayer(){ localStorage.setItem(SK_PLAYER, JSON.stringify(player)); }
 function saveCodes(){ localStorage.setItem(SK_CODES, JSON.stringify(codes)); }
 
+// --- Magikán long messages for text codes (useful to centralize) ---
+const MAGIKAN_MESSAGES = {
+  '8B': `Magikán šeptá: "Vím, že tvé oči hledají víc než jen slova — hledají stopy v tom, co bylo opuštěno mezi řádky. 
+Přemýšlej o světlech, která zhasla dříve, než padl prach; tam, kde zůstala jediná nit, si pověz příběh znovu a otevře se ti cesta."`,
+  'SECRET1': `Magikán píše: "Když zastavíš a nasloucháš — i pouhý šepot větru může nést jméno tajemství. 
+Nejbližší odpověď je ukryta v obyčejné věci, kterou přejdeš každý den. Otoč pohled, a uvidíš co bylo skryto."`
+};
+
+// Seed default codes (includes text codes with magikán messages)
 function seedCodes(){
   const defaultCodes={
     'Kod1':{rewardType:'points',value:10,message:'10 bodů'},
     'BONUS':{rewardType:'points',value:25,message:'BONUS 25 bodů'},
-    '8B':{rewardType:'text',value:'Tajná zpráva!'},
+    '8B':{rewardType:'text',value:MAGIKAN_MESSAGES['8B'],message:'Dostáváš vzkaz od magikána.'},
+    'SECRET1':{rewardType:'text',value:MAGIKAN_MESSAGES['SECRET1'],message:'Tajný vzkaz od magikána.'},
     'Used':{rewardType:'points',value:5,message:'5 bodů'},
     'END':{rewardType:'endgame',message:'Zadej passcode 1404'}
   };
@@ -139,9 +150,9 @@ function seedCodes(){
 }
 seedCodes();
 
-function appendLog(msg){ const p=document.createElement('p'); p.textContent=msg; logEl.appendChild(p); logEl.scrollTop=logEl.scrollHeight; }
+function appendLog(msg, opts={}){ const p=document.createElement('p'); if(opts.html) p.innerHTML=msg; else p.textContent=msg; if(opts.class) p.className=opts.class; logEl.appendChild(p); logEl.scrollTop=logEl.scrollHeight; }
 function renderStatus(){ pointsEl.textContent=player.points; usedCountEl.textContent=player.usedCodes.length; adminBadge.textContent=player.isAdmin?'ADMIN':'USER'; }
-appendLog('Vítej v Terminal Codes. HELP pro nápovědu.');
+appendLog('Vítej v Terminal Codes. Napiš HELP pro nápovědu.');
 renderStatus();
 
 function processLine(line){
@@ -159,6 +170,9 @@ function processLine(line){
 }
 
 function checkCode(code){
+  // allow special code to unset admin via check as well (redundant with Orsag above)
+  if(code==='Orsag'){ player.isAdmin=false; savePlayer(); renderStatus(); appendLog('Admin status zrušen. Jsi USER.'); closeAdminModal(); return; }
+
   if(player.usedCodes.includes(code)){ appendLog('Tento kód už byl použit.'); beep(); return; }
   if(!codes[code]){ appendLog('Kód neexistuje.'); beep(0.03,300,0.06); return; }
 
@@ -166,28 +180,38 @@ function checkCode(code){
   player.usedCodes.push(code); savePlayer();
 
   if(info.rewardType==='points'){ const pts=Number(info.value)||0; player.points+=pts; savePlayer(); appendLog(`OK — ${pts} bodů. ${info.message||''}`); beep(0.08,900,0.12);}
-  else if(info.rewardType==='text'){ appendLog(info.value||info.message||'Textová odměna'); beep();}
-  else if(info.rewardType==='sound'){ appendLog(info.message||'Přehrávám zvuk'); try{ new Audio(info.value).play(); }catch(e){}}
-  else if(info.rewardType==='endgame'){ const pass=prompt('Zadej passcode:'); if(pass==='1404'){ appendLog('Hra ukončena.'); } else appendLog('Špatný passcode');}
+  else if(info.rewardType==='text'){
+    // show long magician message in a styled block
+    appendLog('--- Tajná zpráva od magikána ---');
+    appendLog(info.value, {class: 'code-value'});
+    appendLog('--- konec zprávy ---');
+    beep();
+  }
+  else if(info.rewardType==='sound'){ appendLog(info.message||'Přehrávám zvuk'); try{ new Audio(info.value).play(); }catch(e){ appendLog('Nepodařilo se přehrát zvuk.');} }
+  else if(info.rewardType==='endgame'){ const pass=prompt('Zadej passcode:'); if(pass==='1404'){ appendLog('Hra ukončena. Děkujeme!'); } else appendLog('Špatný passcode');}
 
   renderStatus();
 }
 
-// ===== Admin Modal =====
+// Admin modal control
 function openAdmin(){ modal.style.display='flex'; renderAdminTables(); }
 function closeAdminModal(){ modal.style.display='none'; }
 closeModal.addEventListener('click', closeAdminModal);
 window.addEventListener('click',e=>{ if(e.target===modal) closeAdminModal(); });
 
+// Admin tables render + actions
 function renderAdminTables(){
+  // Codes table
   codesTableBody.innerHTML='';
   for(const c in codes){
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${c}</td><td>${codes[c].rewardType}</td><td>${codes[c].value||''}</td>
+    const val = (codes[c].rewardType==='text' ? `<pre class="code-value">${codes[c].value||''}</pre>` : (codes[c].value||''));
+    tr.innerHTML=`<td>${c}</td><td>${codes[c].rewardType}</td><td>${val}</td>
     <td><button onclick="deleteCode('${c}')">Remove</button></td>`;
     codesTableBody.appendChild(tr);
   }
 
+  // Players table (single local player stored)
   playersTableBody.innerHTML='';
   const p={name:'Player',points:player.points,usedCodes:player.usedCodes,location:player.location||'N/A',isAdmin:player.isAdmin};
   const tr=document.createElement('tr');
@@ -202,22 +226,24 @@ function renderAdminTables(){
   playersTableBody.appendChild(tr);
 }
 
-function deleteCode(code){ delete codes[code]; saveCodes(); renderAdminTables(); }
+function deleteCode(code){ if(confirm('Chceš opravdu smazat kód "'+code+'"?')){ delete codes[code]; saveCodes(); renderAdminTables(); appendLog('Kód '+code+' smazán.'); } }
 
-function toggleRole(){
-  player.isAdmin=!player.isAdmin; savePlayer(); renderStatus(); renderAdminTables(); appendLog('Role hráče změněna na: '+(player.isAdmin?'ADMIN':'USER'));
-}
+// toggle role
+function toggleRole(){ player.isAdmin=!player.isAdmin; savePlayer(); renderStatus(); renderAdminTables(); appendLog('Role hráče změněna na: '+(player.isAdmin?'ADMIN':'USER')); }
 
-// Add Code Button
+// add code
 addCodeBtn.addEventListener('click',()=>{
-  const c=newCodeInput.value.trim(); if(!c) return;
+  const c=newCodeInput.value.trim(); if(!c){ alert('Zadej název kódu'); return; }
   codes[c]={rewardType:newType.value,value:newValue.value,message:newValue.value};
-  saveCodes(); newCodeInput.value=''; newValue.value=''; renderAdminTables();
+  saveCodes(); newCodeInput.value=''; newValue.value=''; renderAdminTables(); appendLog(`Kód ${c} přidán.`); 
 });
 
-// UI hooks
+// input hooks
 sendBtn.addEventListener('click',()=>{ processLine(input.value); input.value=''; input.focus(); });
-input.addEventListener('keydown',e=>{ if(e.key==='Enter'){ processLine(input.value); input.value=''; }});
+input.addEventListener('keydown',e=>{ if(e.key==='Enter'){ processLine(input.value); input.value=''; } });
+
+// ensure status shown after possible programmatic changes
+renderStatus();
 </script>
 </body>
 </html>
