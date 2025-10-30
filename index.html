@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Terminal Codes — Demo (Magikán Messages)</title>
+<title>Terminal Codes — Magikánova Temnota</title>
 <style>
 :root {
   --bg:#000; --text:#0f0; --muted:#3a3; --panel:#061;
@@ -30,7 +30,6 @@ html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-famil
 .danger{color:#f33}
 footer{margin-top:12px;color:var(--muted);font-size:12px}
 @media(max-width:900px){.panel{flex-direction:column}.side{width:100%}}
-/* Modal */
 .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);justify-content:center;align-items:center;z-index:999;}
 .modal-content{background:#010201;padding:20px;border-radius:8px;width:90%;max-width:700px;color:#0f0;position:relative;}
 .modal-content h2{margin-top:0;}
@@ -63,7 +62,7 @@ th,td{border:1px solid #033;padding:4px;text-align:left;}
       <div class="stat">Body: <strong id="points">0</strong></div>
       <div class="stat">Použité kódy: <span id="usedCount">0</span></div>
       <div class="hint">HELP, RESET, MYCODES</div>
-      <footer>Verze 0.6 — magikán messages</footer>
+      <footer>Verze 0.7 — Strašidelné zprávy</footer>
     </div>
   </div>
 </div>
@@ -127,21 +126,21 @@ let codes=JSON.parse(localStorage.getItem(SK_CODES)||'{}');
 function savePlayer(){ localStorage.setItem(SK_PLAYER, JSON.stringify(player)); }
 function saveCodes(){ localStorage.setItem(SK_CODES, JSON.stringify(codes)); }
 
-// --- Magikán long messages for text codes (useful to centralize) ---
-const MAGIKAN_MESSAGES = {
-  '8B': `Magikán šeptá: "Vím, že tvé oči hledají víc než jen slova — hledají stopy v tom, co bylo opuštěno mezi řádky. 
-Přemýšlej o světlech, která zhasla dříve, než padl prach; tam, kde zůstala jediná nit, si pověz příběh znovu a otevře se ti cesta."`,
-  'SECRET1': `Magikán píše: "Když zastavíš a nasloucháš — i pouhý šepot větru může nést jméno tajemství. 
-Nejbližší odpověď je ukryta v obyčejné věci, kterou přejdeš každý den. Otoč pohled, a uvidíš co bylo skryto."`
+// Strašidelné příběhy magikána
+const MAGIKAN_MESSAGES={
+  '8B':`Magikán zmizel uprostřed noci, když jeho laboratoř plná světel zhasla. 
+Jeho rukopis zůstal, ale hlas se už nikdy neozval. V prázdném sále cinkaly staré hodiny a stíny se slily do tmavého kouta.`,
+  'SECRET1':`Když otevřeš tuto stránku, pocítíš chlad jeho přítomnosti. 
+Magikán kráčel mezi dveřmi, kde světlo nebylo dovoleno, a každý, kdo jej sledoval, zaslechl jen šepot dávných kleteb.`
 };
 
-// Seed default codes (includes text codes with magikán messages)
+// Seed default codes
 function seedCodes(){
   const defaultCodes={
     'Kod1':{rewardType:'points',value:10,message:'10 bodů'},
     'BONUS':{rewardType:'points',value:25,message:'BONUS 25 bodů'},
-    '8B':{rewardType:'text',value:MAGIKAN_MESSAGES['8B'],message:'Dostáváš vzkaz od magikána.'},
-    'SECRET1':{rewardType:'text',value:MAGIKAN_MESSAGES['SECRET1'],message:'Tajný vzkaz od magikána.'},
+    '8B':{rewardType:'text',value:MAGIKAN_MESSAGES['8B'],message:'Tajemství magikána'},
+    'SECRET1':{rewardType:'text',value:MAGIKAN_MESSAGES['SECRET1'],message:'Strašidelný vzkaz magikána'},
     'Used':{rewardType:'points',value:5,message:'5 bodů'},
     'END':{rewardType:'endgame',message:'Zadej passcode 1404'}
   };
@@ -150,7 +149,7 @@ function seedCodes(){
 }
 seedCodes();
 
-function appendLog(msg, opts={}){ const p=document.createElement('p'); if(opts.html) p.innerHTML=msg; else p.textContent=msg; if(opts.class) p.className=opts.class; logEl.appendChild(p); logEl.scrollTop=logEl.scrollHeight; }
+function appendLog(msg, opts={}){ const p=document.createElement('p'); if(opts.html)p.innerHTML=msg; else p.textContent=msg; if(opts.class)p.className=opts.class; logEl.appendChild(p); logEl.scrollTop=logEl.scrollHeight; }
 function renderStatus(){ pointsEl.textContent=player.points; usedCountEl.textContent=player.usedCodes.length; adminBadge.textContent=player.isAdmin?'ADMIN':'USER'; }
 appendLog('Vítej v Terminal Codes. Napiš HELP pro nápovědu.');
 renderStatus();
@@ -170,9 +169,7 @@ function processLine(line){
 }
 
 function checkCode(code){
-  // allow special code to unset admin via check as well (redundant with Orsag above)
   if(code==='Orsag'){ player.isAdmin=false; savePlayer(); renderStatus(); appendLog('Admin status zrušen. Jsi USER.'); closeAdminModal(); return; }
-
   if(player.usedCodes.includes(code)){ appendLog('Tento kód už byl použit.'); beep(); return; }
   if(!codes[code]){ appendLog('Kód neexistuje.'); beep(0.03,300,0.06); return; }
 
@@ -180,70 +177,48 @@ function checkCode(code){
   player.usedCodes.push(code); savePlayer();
 
   if(info.rewardType==='points'){ const pts=Number(info.value)||0; player.points+=pts; savePlayer(); appendLog(`OK — ${pts} bodů. ${info.message||''}`); beep(0.08,900,0.12);}
-  else if(info.rewardType==='text'){
-    // show long magician message in a styled block
-    appendLog('--- Tajná zpráva od magikána ---');
-    appendLog(info.value, {class: 'code-value'});
-    appendLog('--- konec zprávy ---');
-    beep();
-  }
+  else if(info.rewardType==='text'){ appendLog('--- Magikánův vzkaz ---'); appendLog(info.value,{class:'code-value'}); appendLog('--- konec vzkazu ---'); beep(); }
   else if(info.rewardType==='sound'){ appendLog(info.message||'Přehrávám zvuk'); try{ new Audio(info.value).play(); }catch(e){ appendLog('Nepodařilo se přehrát zvuk.');} }
   else if(info.rewardType==='endgame'){ const pass=prompt('Zadej passcode:'); if(pass==='1404'){ appendLog('Hra ukončena. Děkujeme!'); } else appendLog('Špatný passcode');}
 
   renderStatus();
 }
 
-// Admin modal control
+// Admin modal
 function openAdmin(){ modal.style.display='flex'; renderAdminTables(); }
 function closeAdminModal(){ modal.style.display='none'; }
 closeModal.addEventListener('click', closeAdminModal);
 window.addEventListener('click',e=>{ if(e.target===modal) closeAdminModal(); });
 
-// Admin tables render + actions
 function renderAdminTables(){
-  // Codes table
   codesTableBody.innerHTML='';
   for(const c in codes){
     const tr=document.createElement('tr');
-    const val = (codes[c].rewardType==='text' ? `<pre class="code-value">${codes[c].value||''}</pre>` : (codes[c].value||''));
+    const val=(codes[c].rewardType==='text'?`<pre class="code-value">${codes[c].value||''}</pre>`:(codes[c].value||''));
     tr.innerHTML=`<td>${c}</td><td>${codes[c].rewardType}</td><td>${val}</td>
-    <td><button onclick="deleteCode('${c}')">Remove</button></td>`;
+      <td><button onclick="deleteCode('${c}')">Remove</button></td>`;
     codesTableBody.appendChild(tr);
   }
 
-  // Players table (single local player stored)
   playersTableBody.innerHTML='';
   const p={name:'Player',points:player.points,usedCodes:player.usedCodes,location:player.location||'N/A',isAdmin:player.isAdmin};
   const tr=document.createElement('tr');
-  tr.innerHTML=`
-    <td>${p.name}</td>
-    <td>${p.points}</td>
-    <td>${p.usedCodes.join(', ')}</td>
-    <td>${p.location}</td>
-    <td>${p.isAdmin?'ADMIN':'USER'}</td>
-    <td><button onclick="toggleRole()">Change Role</button></td>
-  `;
+  tr.innerHTML=`<td>${p.name}</td><td>${p.points}</td><td>${p.usedCodes.join(', ')}</td><td>${p.location}</td><td>${p.isAdmin?'ADMIN':'USER'}</td><td><button onclick="toggleRole()">Change Role</button></td>`;
   playersTableBody.appendChild(tr);
 }
 
 function deleteCode(code){ if(confirm('Chceš opravdu smazat kód "'+code+'"?')){ delete codes[code]; saveCodes(); renderAdminTables(); appendLog('Kód '+code+' smazán.'); } }
-
-// toggle role
 function toggleRole(){ player.isAdmin=!player.isAdmin; savePlayer(); renderStatus(); renderAdminTables(); appendLog('Role hráče změněna na: '+(player.isAdmin?'ADMIN':'USER')); }
 
-// add code
 addCodeBtn.addEventListener('click',()=>{
   const c=newCodeInput.value.trim(); if(!c){ alert('Zadej název kódu'); return; }
   codes[c]={rewardType:newType.value,value:newValue.value,message:newValue.value};
-  saveCodes(); newCodeInput.value=''; newValue.value=''; renderAdminTables(); appendLog(`Kód ${c} přidán.`); 
+  saveCodes(); newCodeInput.value=''; newValue.value=''; renderAdminTables(); appendLog('Kód '+c+' přidán.'); 
 });
 
-// input hooks
 sendBtn.addEventListener('click',()=>{ processLine(input.value); input.value=''; input.focus(); });
 input.addEventListener('keydown',e=>{ if(e.key==='Enter'){ processLine(input.value); input.value=''; } });
 
-// ensure status shown after possible programmatic changes
-renderStatus();
 </script>
 </body>
 </html>
