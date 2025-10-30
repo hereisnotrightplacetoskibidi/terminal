@@ -4,29 +4,28 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Terminal Codes Offline</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#010201">
 <style>
-  :root{
-    --bg:#000; --text:#0f0; --muted:#3a3; --panel:#061;
-    --font:'Courier New', monospace;
-  }
-  body,html{margin:0;padding:0;height:100%;background:var(--bg);color:var(--text);font-family:var(--font);}
-  .app{display:flex;flex-direction:column;height:100vh;padding:12px;box-sizing:border-box;}
-  .header{display:flex;align-items:center;gap:12px;}
-  .logo{font-weight:700;font-size:18px;}
-  .panel{display:flex;flex:1;gap:12px;margin-top:12px;}
-  .terminal,.chat,.admin-panel{flex:1;background:#010201;border-radius:8px;padding:12px;box-shadow:0 8px 24px rgba(0,0,0,.6);display:flex;flex-direction:column;}
-  .log{flex:1;overflow:auto;padding:6px;border-radius:6px;background:linear-gradient(180deg,#001000 0,#001400 100%)}
-  .input-row{display:flex;gap:8px;margin-top:8px;}
-  .cmd{flex:1;background:transparent;border:1px solid #083;outline:none;padding:10px;color:var(--text);font-family:var(--font);font-size:14px;border-radius:6px}
-  .btn{background:#063;border:0;padding:10px 12px;border-radius:6px;color:var(--text);cursor:pointer}
-  .side{width:320px;background:#020402;border-radius:8px;padding:12px}
-  .stat{font-size:14px;margin-bottom:8px}
-  .small{color:var(--muted);font-size:13px}
-  footer{margin-top:12px;color:var(--muted);font-size:12px}
-  .tab-btns{display:flex;gap:4px;margin-bottom:8px}
-  .tab-btns button{flex:1;padding:6px;border-radius:4px;background:#022;color:var(--text);border:none;cursor:pointer}
-  .tab-btns button.active{background:#044}
-  @media(max-width:900px){.panel{flex-direction:column}.side{width:100%}}
+:root{--bg:#000;--text:#0f0;--muted:#3a3;--panel:#061;--font:'Courier New', monospace;}
+body,html{margin:0;padding:0;height:100%;background:var(--bg);color:var(--text);font-family:var(--font);}
+.app{display:flex;flex-direction:column;height:100vh;padding:12px;box-sizing:border-box;}
+.header{display:flex;align-items:center;gap:12px;}
+.logo{font-weight:700;font-size:18px;}
+.panel{display:flex;flex:1;gap:12px;margin-top:12px;}
+.terminal,.chat,.admin-panel{flex:1;background:#010201;border-radius:8px;padding:12px;box-shadow:0 8px 24px rgba(0,0,0,.6);display:flex;flex-direction:column;}
+.log{flex:1;overflow:auto;padding:6px;border-radius:6px;background:linear-gradient(180deg,#001000 0,#001400 100%)}
+.input-row{display:flex;gap:8px;margin-top:8px;}
+.cmd{flex:1;background:transparent;border:1px solid #083;outline:none;padding:10px;color:var(--text);font-family:var(--font);font-size:14px;border-radius:6px}
+.btn{background:#063;border:0;padding:10px 12px;border-radius:6px;color:var(--text);cursor:pointer}
+.side{width:320px;background:#020402;border-radius:8px;padding:12px}
+.stat{font-size:14px;margin-bottom:8px}
+.small{color:var(--muted);font-size:13px}
+footer{margin-top:12px;color:var(--muted);font-size:12px}
+.tab-btns{display:flex;gap:4px;margin-bottom:8px}
+.tab-btns button{flex:1;padding:6px;border-radius:4px;background:#022;color:var(--text);border:none;cursor:pointer}
+.tab-btns button.active{background:#044}
+@media(max-width:900px){.panel{flex-direction:column}.side{width:100%}}
 </style>
 </head>
 <body>
@@ -41,6 +40,7 @@
         <button id="tabTerminal" class="active">Terminal</button>
         <button id="tabChat">Chat</button>
       </div>
+
       <div id="terminal" class="terminal">
         <div id="log" class="log"></div>
         <div class="input-row">
@@ -48,6 +48,7 @@
           <button id="sendBtn" class="btn">OK</button>
         </div>
       </div>
+
       <div id="chat" class="chat" style="display:none;">
         <div id="chatLog" class="log"></div>
         <div class="input-row">
@@ -55,6 +56,7 @@
           <button id="sendChatBtn" class="btn">Send</button>
         </div>
       </div>
+
       <div id="adminPanel" class="admin-panel" style="display:none;">
         <div class="small">Admin Panel - Send message to users</div>
         <div class="input-row">
@@ -66,9 +68,11 @@
         </div>
       </div>
     </div>
+
     <div class="side">
       <div class="stat">Body: <strong id="points">0</strong></div>
       <div class="stat">Použité kódy: <span id="usedCount">0</span></div>
+      <button id="installBtn" class="btn">Přidat na plochu / Instalovat</button>
       <div class="small">Příkazy: HELP, RESET, MYCODES, ADMIN ADD, Orsag</div>
       <footer>Verze 0.1 — Offline Demo</footer>
     </div>
@@ -76,26 +80,22 @@
 </div>
 
 <script>
+// --- Elements
 const el=id=>document.getElementById(id);
 const logEl=el('log'),input=el('cmdInput'),sendBtn=el('sendBtn'),pointsEl=el('points'),usedCountEl=el('usedCount'),adminBadge=el('adminBadge');
 const chatEl=el('chat'),chatLogEl=el('chatLog'),chatInput=el('chatInput'),sendChatBtn=el('sendChatBtn');
 const adminPanel=el('adminPanel'),adminMsgUser=el('adminMsgUser'),adminMsgText=el('adminMsgText'),adminSendMsg=el('adminSendMsg');
 const tabTerminal=el('tabTerminal'),tabChat=el('tabChat');
+const installBtn=el('installBtn');
 
 let username=localStorage.getItem('tc_username')||prompt('Zadej své username:')||'Player';
 localStorage.setItem('tc_username',username);
 
 function beep(volume=0.05,freq=800,duration=0.06){
-  try{
-    const ctx=new (window.AudioContext||window.webkitAudioContext)();
-    const o=ctx.createOscillator(),g=ctx.createGain();
-    o.type='sine';o.frequency.value=freq;
-    g.gain.value=volume; o.connect(g); g.connect(ctx.destination);
-    o.start(); g.gain.exponentialRampToValueAtTime(0.0001,ctx.currentTime+duration);
-    setTimeout(()=>{o.stop();ctx.close()},duration*1000+50);
-  }catch(e){}
+  try{const ctx=new (window.AudioContext||window.webkitAudioContext)();const o=ctx.createOscillator(),g=ctx.createGain();o.type='sine';o.frequency.value=freq;g.gain.value=volume;o.connect(g);g.connect(ctx.destination);o.start();g.gain.exponentialRampToValueAtTime(0.0001,ctx.currentTime+duration);setTimeout(()=>{o.stop();ctx.close()},duration*1000+50);}catch(e){}
 }
 
+// --- Data
 const DEFAULT_PLAYER={points:0,usedCodes:[],isAdmin:false};
 const DEFAULT_CODES={
   WELCOME:{rewardType:'points',value:50,message:'Vítej! Získal jsi 50 bodů.'},
@@ -110,83 +110,60 @@ const SK_PLAYER='tc_player',SK_CODES='tc_codes';
 
 let player=JSON.parse(localStorage.getItem(SK_PLAYER)||JSON.stringify(DEFAULT_PLAYER));
 let codes=JSON.parse(localStorage.getItem(SK_CODES)||JSON.stringify(DEFAULT_CODES));
+let messages=JSON.parse(localStorage.getItem('tc_messages')||'[]');
 
 function savePlayer(){localStorage.setItem(SK_PLAYER,JSON.stringify(player))}
 function saveCodes(){localStorage.setItem(SK_CODES,JSON.stringify(codes))}
+function saveMessages(){localStorage.setItem('tc_messages',JSON.stringify(messages))}
 function appendLog(text,opts={}){const p=document.createElement('p');if(opts.html)p.innerHTML=text;else p.textContent=text;if(opts.class)p.className=opts.class;logEl.appendChild(p);logEl.scrollTop=logEl.scrollHeight}
 function renderStatus(){pointsEl.textContent=player.points;usedCountEl.textContent=player.usedCodes.length;adminBadge.textContent=player.isAdmin?'ADMIN':'USER'}
 
 appendLog(`Vítej ${username}. Napiš HELP pro nápovědu.`);
 renderStatus();
 
+// --- Terminal
 function processLine(raw){
-  const line=raw.trim();
-  if(!line) return;
-  appendLog('> '+line);
-  const parts=line.split(/\s+/);
-  const cmd=parts[0].toUpperCase();
-
+  const line=raw.trim();if(!line)return;appendLog('> '+line);
+  const parts=line.split(/\s+/);const cmd=parts[0].toUpperCase();
   if(cmd==='HELP'){appendLog('Příkazy: HELP, RESET, MYCODES, ADMIN ADD <KOD> <TYPE> <VALUE>, Orsag');return;}
   if(cmd==='RESET'){player={...DEFAULT_PLAYER};savePlayer();appendLog('Data resetována');renderStatus();return;}
   if(cmd==='MYCODES'){appendLog('Použité kódy: '+(player.usedCodes.length?player.usedCodes.join(', '):'(žádné)'));return;}
-  if(cmd==='ADMIN' && parts[1]?.toUpperCase()==='ADD'){
-    if(!player.isAdmin){appendLog('Přístup odepřen.');return;}
-    if(parts.length<5){appendLog('Chybný formát. ADMIN ADD <KOD> <TYPE> <VALUE>');return;}
-    const code=parts[2],type=parts[3],value=parts.slice(4).join(' ');
-    addCode(code,{rewardType:type,value:value,message:`Nový kód ${code}`});
-    appendLog(`Kód ${code} přidán (type=${type}, value=${value})`);return;
-  }
+  if(cmd==='ADMIN' && parts[1]?.toUpperCase()==='ADD'){if(!player.isAdmin){appendLog('Přístup odepřen');return;}if(parts.length<5){appendLog('Chybný formát');return;}const code=parts[2],type=parts[3],value=parts.slice(4).join(' ');addCode(code,{rewardType:type,value:value,message:`Nový kód ${code}`});appendLog(`Kód ${code} přidán`);return;}
   if(cmd==='ORSAG'){player.isAdmin=false;savePlayer();renderStatus();appendLog('Jsi zpět USER.');return;}
-  if(line==='Filip'){player.isAdmin=true;savePlayer();renderStatus();appendLog('ADMIN mode ON');adminPanel.style.display='block';return;}
   checkCode(line);
 }
 
 function addCode(code,obj){codes[code]=obj;saveCodes();}
-
 function checkCode(code){
-  if(player.usedCodes.includes(code)){appendLog('Tento kód už byl použit');beep(0.04,600,0.04);return;}
+  if(player.usedCodes.includes(code)){appendLog('Tento kód už byl použit');beep(0.03,300,0.06);return;}
   if(!codes[code]){appendLog('Kód neexistuje');beep(0.03,300,0.06);return;}
   const info=codes[code];player.usedCodes.push(code);savePlayer();
-  if(info.rewardType==='points'){const pts=Number(info.value)||0;player.points+=pts;savePlayer();appendLog(`Získal jsi ${pts} bodů. ${info.message||''}`);beep(0.08,900,0.12);}
-  else if(info.rewardType==='text'){appendLog(info.value||info.message||'Dostal jsi textovou odměnu');beep(0.06,700,0.09);}
+  if(info.rewardType==='points'){const pts=Number(info.value)||0;player.points+=pts;savePlayer();appendLog(`Získal jsi ${pts} bodů. ${info.message}`);beep(0.08,900,0.12);}
+  else if(info.rewardType==='text'){appendLog(info.value||info.message||'Odměna textová');beep(0.06,700,0.09);}
+  else{appendLog(info.message||'Odměna');beep(0.05,800,0.08);}
   renderStatus();
 }
 
 sendBtn.addEventListener('click',()=>{processLine(input.value);input.value='';input.focus();});
 input.addEventListener('keydown',e=>{if(e.key==='Enter'){processLine(input.value);input.value='';}});
 
-// Tab switching
-tabTerminal.addEventListener('click',()=>{
-  terminal.style.display='flex';chat.style.display='none';
-  tabTerminal.classList.add('active');tabChat.classList.remove('active');
-});
-tabChat.addEventListener('click',()=>{
-  terminal.style.display='none';chat.style.display='flex';
-  tabTerminal.classList.remove('active');tabChat.classList.add('active');
-});
+// --- Tabs
+tabTerminal.addEventListener('click',()=>{terminal.style.display='flex';chatEl.style.display='none';tabTerminal.classList.add('active');tabChat.classList.remove('active');});
+tabChat.addEventListener('click',()=>{terminal.style.display='none';chatEl.style.display='flex';tabTerminal.classList.remove('active');tabChat.classList.add('active');});
 
-// Offline chat using localStorage events
-function broadcastMessage(msg){ 
-  const all=JSON.parse(localStorage.getItem('tc_messages')||'[]'); all.push(msg); localStorage.setItem('tc_messages',JSON.stringify(all));
-}
-function renderMessages(){
-  const all=JSON.parse(localStorage.getItem('tc_messages')||'[]');
-  chatLogEl.innerHTML=''; all.forEach(m=>{const p=document.createElement('p');p.textContent=`${m.user}: ${m.text}`;chatLogEl.appendChild(p);});
-  chatLogEl.scrollTop=chatLogEl.scrollHeight;
-}
-sendChatBtn.addEventListener('click',()=>{
-  const text=chatInput.value.trim();if(!text)return;
-  broadcastMessage({user:username,text}); chatInput.value=''; renderMessages();
-});
+// --- Chat
+function renderMessages(){chatLogEl.innerHTML='';messages.forEach(m=>{const p=document.createElement('p');p.textContent=`${m.user}: ${m.text}`;chatLogEl.appendChild(p);});chatLogEl.scrollTop=chatLogEl.scrollHeight;}
+function broadcastMessage(msg){messages.push(msg);saveMessages();renderMessages();}
+sendChatBtn.addEventListener('click',()=>{const text=chatInput.value.trim();if(!text)return;broadcastMessage({user:username,text});chatInput.value='';renderMessages();});
 window.addEventListener('storage',()=>{renderMessages();});
-adminSendMsg.addEventListener('click',()=>{
-  const user=adminMsgUser.value.trim(),text=adminMsgText.value.trim();
-  if(!text)return;
-  const all=JSON.parse(localStorage.getItem('tc_messages')||'[]');
-  if(user){all.push({user:'ADMIN->'+user,text});}
-  else{all.push({user:'ADMIN',text});}
-  localStorage.setItem('tc_messages',JSON.stringify(all));renderMessages();
-});
+
+// --- Admin
+adminSendMsg.addEventListener('click',()=>{const user=adminMsgUser.value.trim(),text=adminMsgText.value.trim();if(!text)return; if(user){messages.push({user:'ADMIN->'+user,text});}else{messages.push({user:'ADMIN',text});}saveMessages();renderMessages();});
+
+// --- Install Prompt
+let deferredPrompt; installBtn.style.display='none';
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;installBtn.style.display='inline-block';});
+installBtn.addEventListener('click',async()=>{if(!deferredPrompt)return;deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;installBtn.style.display='none';});
 renderMessages();
 </script>
 </body>
