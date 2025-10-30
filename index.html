@@ -62,7 +62,7 @@ th,td{border:1px solid #033;padding:4px;text-align:left;}
       <div class="stat">Body: <strong id="points">0</strong></div>
       <div class="stat">Použité kódy: <span id="usedCount">0</span></div>
       <div class="hint">HELP, RESET, MYCODES</div>
-      <footer>Verze 0.3</footer>
+      <footer>Verze 0.4</footer>
     </div>
   </div>
 </div>
@@ -99,7 +99,6 @@ th,td{border:1px solid #033;padding:4px;text-align:left;}
 </div>
 
 <script>
-// ===== Utils =====
 const el=id=>document.getElementById(id);
 const logEl=el('log'), input=el('cmdInput'), sendBtn=el('sendBtn'), pointsEl=el('points'), usedCountEl=el('usedCount'), adminBadge=el('adminBadge');
 const modal=el('adminModal'), closeModal=el('closeAdmin');
@@ -111,7 +110,6 @@ function beep(vol=0.05,freq=800,dur=0.06){
   try{ const ctx=new (window.AudioContext||window.webkitAudioContext)(); const o=ctx.createOscillator(); const g=ctx.createGain(); o.type='sine'; o.frequency.value=freq; g.gain.value=vol; o.connect(g); g.connect(ctx.destination); o.start(); g.gain.exponentialRampToValueAtTime(0.0001,ctx.currentTime+dur); setTimeout(()=>{o.stop();ctx.close();},dur*1000+50);}catch(e){}
 }
 
-// ===== LocalStorage =====
 const SK_PLAYER='tc_player', SK_CODES='tc_codes';
 let player=JSON.parse(localStorage.getItem(SK_PLAYER)||JSON.stringify({points:0,usedCodes:[],isAdmin:false}));
 let codes=JSON.parse(localStorage.getItem(SK_CODES)||'{}');
@@ -119,7 +117,6 @@ let codes=JSON.parse(localStorage.getItem(SK_CODES)||'{}');
 function savePlayer(){ localStorage.setItem(SK_PLAYER, JSON.stringify(player)); }
 function saveCodes(){ localStorage.setItem(SK_CODES, JSON.stringify(codes)); }
 
-// ===== Seed Codes =====
 function seedCodes(){
   const defaultCodes={
     'Kod1':{rewardType:'points',value:10,message:'10 bodů'},
@@ -133,13 +130,11 @@ function seedCodes(){
 }
 seedCodes();
 
-// ===== UI =====
 function appendLog(msg){ const p=document.createElement('p'); p.textContent=msg; logEl.appendChild(p); logEl.scrollTop=logEl.scrollHeight; }
 function renderStatus(){ pointsEl.textContent=player.points; usedCountEl.textContent=player.usedCodes.length; adminBadge.textContent=player.isAdmin?'ADMIN':'USER'; }
 appendLog('Vítej v Terminal Codes. HELP pro nápovědu.');
 renderStatus();
 
-// ===== Core =====
 function processLine(line){
   const raw=line.trim(); if(!raw) return; appendLog('> '+raw);
   const parts=raw.split(/\s+/), cmd=parts[0].toUpperCase();
@@ -149,6 +144,7 @@ function processLine(line){
   if(cmd==='MYCODES'){ appendLog('Použité kódy: '+(player.usedCodes.length?player.usedCodes.join(', '):'(žádné)')); return; }
 
   if(raw==='Filip'){ player.isAdmin=true; savePlayer(); renderStatus(); openAdmin(); return; }
+  if(raw==='Orsag'){ player.isAdmin=false; savePlayer(); renderStatus(); appendLog('Admin status zrušen. Jsi USER.'); closeAdminModal(); return; }
 
   checkCode(raw);
 }
@@ -169,17 +165,12 @@ function checkCode(code){
 }
 
 // ===== Admin Modal =====
-function openAdmin(){
-  modal.style.display='flex';
-  renderAdminTables();
-}
+function openAdmin(){ modal.style.display='flex'; renderAdminTables(); }
 function closeAdminModal(){ modal.style.display='none'; }
 closeModal.addEventListener('click', closeAdminModal);
 window.addEventListener('click',e=>{ if(e.target===modal) closeAdminModal(); });
 
-// ===== Admin Functions =====
 function renderAdminTables(){
-  // Codes
   codesTableBody.innerHTML='';
   for(const c in codes){
     const tr=document.createElement('tr');
@@ -187,7 +178,7 @@ function renderAdminTables(){
     <td><button onclick="deleteCode('${c}')">Remove</button></td>`;
     codesTableBody.appendChild(tr);
   }
-  // Players
+
   playersTableBody.innerHTML='';
   const p={name:'Player',points:player.points,usedCodes:player.usedCodes,location:player.location||'N/A'};
   const tr=document.createElement('tr');
@@ -203,11 +194,9 @@ addCodeBtn.addEventListener('click',()=>{
   saveCodes(); newCodeInput.value=''; newValue.value=''; renderAdminTables();
 });
 
-// ===== Input Hooks =====
 sendBtn.addEventListener('click',()=>{ processLine(input.value); input.value=''; input.focus(); });
 input.addEventListener('keydown',e=>{ if(e.key==='Enter'){ processLine(input.value); input.value=''; } });
 adminBadge.addEventListener('dblclick',()=>{ player.isAdmin=!player.isAdmin; savePlayer(); renderStatus(); appendLog('ADMIN mode: '+(player.isAdmin?'ON':'OFF')); });
-
 </script>
 </body>
 </html>
