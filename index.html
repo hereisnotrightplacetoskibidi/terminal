@@ -1,51 +1,52 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="cs">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Terminal Codes — Magikánova Temnota</title>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Terminal Codes — Multiplayer (Admin Messaging)</title>
 <style>
-:root {
+:root{
   --bg:#000; --text:#0f0; --muted:#3a3; --panel:#061;
   --font: 'Courier New', monospace;
 }
 html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:var(--font);}
-.app{display:flex;flex-direction:column;height:100vh;padding:16px;box-sizing:border-box;}
-.header{display:flex;align-items:center;gap:12px;}
-.logo{font-weight:700;font-size:18px;}
-.panel{flex:1;display:flex;gap:12px;margin-top:12px;}
-.terminal{flex:1;background:#010201;border-radius:8px;padding:12px;box-shadow:0 8px 24px rgba(0,0,0,.6);display:flex;flex-direction:column;}
+.app{display:flex;flex-direction:column;height:100vh;padding:14px;box-sizing:border-box}
+.header{display:flex;align-items:center;gap:12px}
+.logo{font-weight:700;font-size:20px}
+.panel{display:flex;flex:1;gap:12px;margin-top:12px}
+.terminal{flex:1;background:#010201;border-radius:8px;padding:12px;display:flex;flex-direction:column;box-shadow:0 8px 24px rgba(0,0,0,.6)}
 .log{flex:1;overflow:auto;padding:10px;border-radius:6px;background:linear-gradient(180deg,#001000 0,#001400 100%)}
 .log p{margin:6px 0;line-height:1.45}
-.input-row{display:flex;gap:8px;margin-top:8px}
+.input-row{display:flex;gap:8px;margin-top:10px}
 .cmd{flex:1;background:transparent;border:1px solid #083;outline:none;padding:10px;color:var(--text);font-family:var(--font);font-size:14px;border-radius:6px}
 .btn{background:#063;border:0;padding:10px 12px;border-radius:6px;color:var(--text);cursor:pointer}
-.side{width:320px;background:#020402;border-radius:8px;padding:12px}
+.side{width:340px;background:#020402;border-radius:8px;padding:12px;box-shadow:0 6px 20px rgba(0,0,0,.08)}
 .stat{font-size:14px;margin-bottom:8px}
 .small{color:var(--muted);font-size:13px}
-.cursor{display:inline-block;width:10px;animation:blink 1s steps(2) infinite;margin-left:4px}
-@keyframes blink{50%{opacity:0}}
 .admin-badge{background:#113311;padding:4px 8px;border-radius:6px;font-size:12px;cursor:pointer}
 .hint{background:#001500;padding:8px;border-radius:6px;font-size:13px}
-.danger{color:#f33}
-footer{margin-top:12px;color:var(--muted);font-size:12px}
-@media(max-width:900px){.panel{flex-direction:column}.side{width:100%}}
-.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);justify-content:center;align-items:center;z-index:999;}
-.modal-content{background:#010201;padding:20px;border-radius:8px;width:90%;max-width:700px;color:#0f0;position:relative;}
-.modal-content h2{margin-top:0;}
-.close-modal{position:absolute;top:10px;right:10px;cursor:pointer;color:#f33;font-weight:bold;}
-input, select{background:#001100;color:#0f0;border:1px solid #083;padding:6px;margin:4px 0;border-radius:4px;width:100%;}
-button{margin-top:6px;}
-table{width:100%;border-collapse:collapse;margin-top:8px;}
-th,td{border:1px solid #033;padding:4px;text-align:left;}
-.code-value{white-space:pre-wrap;color:#bdf;}
+footer{margin-top:10px;color:var(--muted);font-size:12px}
+
+/* modal admin */
+.modal{display:none;position:fixed;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.85);justify-content:center;align-items:center;z-index:999}
+.modal .card{width:95%;max-width:900px;background:#010201;border-radius:10px;padding:16px;color:#0f0;position:relative}
+.close{position:absolute;right:12px;top:8px;cursor:pointer;color:#f33;font-weight:bold}
+.grid{display:grid;grid-template-columns:1fr 320px;gap:12px}
+.section{border:1px solid #033;padding:10px;border-radius:8px}
+input,select,textarea{background:#001100;color:#0f0;border:1px solid #083;padding:8px;border-radius:6px;width:100%;box-sizing:border-box;margin-top:6px}
+textarea{height:100px;resize:vertical}
+table{width:100%;border-collapse:collapse;margin-top:8px}
+th,td{border:1px solid #033;padding:6px;text-align:left}
+.code-value{white-space:pre-wrap;color:#bdf;font-family:inherit}
+.kv{font-size:13px;color:var(--muted)}
+@media(max-width:900px){.grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <div class="app">
   <div class="header">
-    <div class="logo">TERMINAL CODES</div>
-    <div class="small">Zadej kód → odměna</div>
+    <div class="logo">TERMINAL CODES — Multiplayer</div>
+    <div class="small">Zadej kód → získej odměnu</div>
     <div style="margin-left:auto" class="admin-badge" id="adminBadge">USER</div>
   </div>
 
@@ -59,165 +60,470 @@ th,td{border:1px solid #033;padding:4px;text-align:left;}
     </div>
 
     <div class="side">
+      <div class="stat">Username: <strong id="usernameDisplay">(nezadáno)</strong></div>
       <div class="stat">Body: <strong id="points">0</strong></div>
       <div class="stat">Použité kódy: <span id="usedCount">0</span></div>
-      <div class="hint">HELP, RESET, MYCODES</div>
-      <footer>Verze 0.7 — Strašidelné zprávy</footer>
+      <div class="hint">Příkazy: <code>HELP</code>, <code>RESET</code>, <code>MYCODES</code></div>
+      <div style="margin-top:8px">
+        <button id="shareLoc" class="btn">Sdílet polohu</button>
+      </div>
+      <div style="margin-top:10px" class="kv">Realtime: <span id="realtimeStatus">OFF</span></div>
+      <footer>Verze: multiplayer demo</footer>
     </div>
   </div>
 </div>
 
-<!-- Admin Modal -->
+<!-- Admin modal -->
 <div class="modal" id="adminModal">
-  <div class="modal-content">
-    <span class="close-modal" id="closeAdmin">&times;</span>
-    <h2>Admin Panel</h2>
+  <div class="card">
+    <span class="close" id="closeAdmin">&times;</span>
+    <h2>Admin Panel — Management & Messaging</h2>
+    <div class="grid">
+      <div>
+        <div class="section">
+          <h3>Create / Remove Codes</h3>
+          <input id="newCode" placeholder="kód (např. SECRET2)"/>
+          <select id="newType"><option value="points">points</option><option value="text">text</option><option value="sound">sound</option><option value="endgame">endgame</option></select>
+          <input id="newValue" placeholder="hodnota / text / url zvuku"/>
+          <button id="addCodeBtn" class="btn">Přidat kód</button>
+          <div style="margin-top:8px">
+            <table id="codesTable"><thead><tr><th>Code</th><th>Type</th><th>Value</th><th>Action</th></tr></thead><tbody></tbody></table>
+          </div>
+        </div>
 
-    <h3>Create Code</h3>
-    <input id="newCode" placeholder="Code">
-    <select id="newType">
-      <option value="points">points</option>
-      <option value="text">text</option>
-      <option value="sound">sound</option>
-      <option value="endgame">endgame</option>
-    </select>
-    <input id="newValue" placeholder="Value / message">
-    <button id="addCodeBtn">Add Code</button>
+        <div class="section" style="margin-top:10px">
+          <h3>Messaging Center</h3>
+          <label class="kv">Poslat zprávu</label>
+          <textarea id="msgText" placeholder="Text zprávy (admin)"></textarea>
+          <input id="msgTo" placeholder="username (prázdné = všem)"/>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button id="sendMsgBtn" class="btn">Send</button>
+            <button id="sendMsgLocalBtn" class="btn">Send (local only)</button>
+          </div>
+          <div class="kv" style="margin-top:8px">Zprávy se zobrazí v logu hráče, kterému jsou určeny.</div>
+        </div>
+      </div>
 
-    <h3>Existing Codes</h3>
-    <table id="codesTable">
-      <thead><tr><th>Code</th><th>Type</th><th>Value</th><th>Action</th></tr></thead>
-      <tbody></tbody>
-    </table>
+      <div>
+        <div class="section">
+          <h3>Players / Devices</h3>
+          <div class="kv">Seznam připojených hráčů (realtime)</div>
+          <table id="playersTable"><thead><tr><th>Username</th><th>Points</th><th>Used</th><th>Location</th><th>Role</th><th>Action</th></tr></thead><tbody></tbody></table>
+        </div>
 
-    <h3>Players</h3>
-    <table id="playersTable">
-      <thead>
-        <tr>
-          <th>Player</th>
-          <th>Points</th>
-          <th>Used Codes</th>
-          <th>Location</th>
-          <th>Role</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+        <div class="section" style="margin-top:10px">
+          <h3>Realtime Controls</h3>
+          <div class="kv">Firebase:</div>
+          <div id="firebaseInfo" class="kv">Not configured</div>
+          <button id="forceSync" class="btn">Force sync local → remote</button>
+          <div style="margin-top:8px" class="kv">Tip: vlož Firebase config do kódu a stránka automaticky zapne realtime.</div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
+<!-- OPTIONAL: Firebase scripts (uncomment and add config for realtime) -->
+<!--
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+-->
+
 <script>
-const el=id=>document.getElementById(id);
-const logEl=el('log'), input=el('cmdInput'), sendBtn=el('sendBtn'), pointsEl=el('points'), usedCountEl=el('usedCount'), adminBadge=el('adminBadge');
-const modal=el('adminModal'), closeModal=el('closeAdmin');
-const newCodeInput=el('newCode'), newType=el('newType'), newValue=el('newValue'), addCodeBtn=el('addCodeBtn');
-const codesTableBody=el('codesTable').querySelector('tbody');
-const playersTableBody=el('playersTable').querySelector('tbody');
+/*
+  INSTRUKCE PRO FIREBASE (krátce):
+  1) Vytvoř projekt ve Firebase Console (https://console.firebase.google.com)
+  2) Přejdi na "Add app" → Web app → získej config (apiKey, authDomain, databaseURL, projectId, ...)
+  3) Odkomentuj dva <script> tagy výše a vlož níže svůj config do initFirebase({ ... })
+  4) Uprav Realtime DB rules (pro jednoduchý test):
+     {
+       "rules": {
+         ".read": true,
+         ".write": true
+       }
+     }
+  Poznámka: pro produkci nastavíte bezpečnější rules.
+*/
 
-function beep(vol=0.05,freq=800,dur=0.06){
-  try{ const ctx=new (window.AudioContext||window.webkitAudioContext)(); const o=ctx.createOscillator(); const g=ctx.createGain(); o.type='sine'; o.frequency.value=freq; g.gain.value=vol; o.connect(g); g.connect(ctx.destination); o.start(); g.gain.exponentialRampToValueAtTime(0.0001,ctx.currentTime+dur); setTimeout(()=>{o.stop();ctx.close();},dur*1000+50);}catch(e){}
-}
+// ==== Util ====
+const el = id => document.getElementById(id);
+const logEl = el('log');
+const input = el('cmdInput');
+const sendBtn = el('sendBtn');
+const pointsEl = el('points');
+const usedCountEl = el('usedCount');
+const adminBadge = el('adminBadge');
+const usernameDisplay = el('usernameDisplay');
+const realtimeStatus = el('realtimeStatus');
 
-const SK_PLAYER='tc_player', SK_CODES='tc_codes';
-let player=JSON.parse(localStorage.getItem(SK_PLAYER)||JSON.stringify({points:0,usedCodes:[],isAdmin:false}));
-let codes=JSON.parse(localStorage.getItem(SK_CODES)||'{}');
+const adminModal = el('adminModal'), closeAdmin = el('closeAdmin');
+const newCodeInput = el('newCode'), newType = el('newType'), newValue = el('newValue'), addCodeBtn = el('addCodeBtn');
+const codesTableBody = document.querySelector('#codesTable tbody');
+const playersTableBody = document.querySelector('#playersTable tbody');
+const msgText = el('msgText'), msgTo = el('msgTo'), sendMsgBtn = el('sendMsgBtn'), sendMsgLocalBtn = el('sendMsgLocalBtn');
+const forceSyncBtn = el('forceSync');
 
-function savePlayer(){ localStorage.setItem(SK_PLAYER, JSON.stringify(player)); }
-function saveCodes(){ localStorage.setItem(SK_CODES, JSON.stringify(codes)); }
+let firebaseEnabled = false;
+let db = null;
 
-// Strašidelné příběhy magikána
-const MAGIKAN_MESSAGES={
-  '8B':`Magikán zmizel uprostřed noci, když jeho laboratoř plná světel zhasla. 
-Jeho rukopis zůstal, ale hlas se už nikdy neozval. V prázdném sále cinkaly staré hodiny a stíny se slily do tmavého kouta.`,
-  'SECRET1':`Když otevřeš tuto stránku, pocítíš chlad jeho přítomnosti. 
-Magikán kráčel mezi dveřmi, kde světlo nebylo dovoleno, a každý, kdo jej sledoval, zaslechl jen šepot dávných kleteb.`
-};
+// ==== LocalStorage keys ====
+const SK_PLAYER = 'tc_player';
+const SK_CODES = 'tc_codes';
+const SK_USERNAME = 'tc_username';
 
-// Seed default codes
+// ==== Player & codes local state ====
+let player = JSON.parse(localStorage.getItem(SK_PLAYER) || JSON.stringify({
+  uid: crypto ? crypto.randomUUID() : String(Date.now()) ,
+  points: 0,
+  usedCodes: [],
+  isAdmin: false,
+  location: null
+}));
+let codes = JSON.parse(localStorage.getItem(SK_CODES) || '{}');
+
+function savePlayer(){ localStorage.setItem(SK_PLAYER, JSON.stringify(player)); if(firebaseEnabled) pushPlayerToRemote(); }
+function saveCodes(){ localStorage.setItem(SK_CODES, JSON.stringify(codes)); if(firebaseEnabled) pushCodesToRemote(); }
+
+// ==== Seed codes ====
 function seedCodes(){
-  const defaultCodes={
-    'Kod1':{rewardType:'points',value:10,message:'10 bodů'},
-    'BONUS':{rewardType:'points',value:25,message:'BONUS 25 bodů'},
-    '8B':{rewardType:'text',value:MAGIKAN_MESSAGES['8B'],message:'Tajemství magikána'},
-    'SECRET1':{rewardType:'text',value:MAGIKAN_MESSAGES['SECRET1'],message:'Strašidelný vzkaz magikána'},
-    'Used':{rewardType:'points',value:5,message:'5 bodů'},
-    'END':{rewardType:'endgame',message:'Zadej passcode 1404'}
+  const MAG = {
+    '8B': `Magikán zmizel uprostřed noci, když jeho laboratoř plná světel zhasla. 
+Jeho rukopis zůstal, ale hlas se už nikdy neozval. V prázdném sále cinkaly staré hodiny a stíny se slily do tmavého kouta.
+Něco za šuplíkem šepotal: "Nikdy neotevírej dveře bez světla."`,
+    'SECRET1': `Když otevřeš tuto stránku, pocítíš chlad jeho přítomnosti. 
+Magikán kráčel mezi dveřmi, kde světlo nebylo dovoleno, a každý, kdo jej sledoval, zaslechl jen šepot dávných kleteb.
+Na konci záznamu je písmo zalité voskem — a kousek vlasu, tmavý jako noc.`
   };
-  for(const c in defaultCodes) if(!codes[c]) codes[c]=defaultCodes[c];
+  const defaults = {
+    'Kod1': {rewardType:'points', value:10, message:'10 bodů'},
+    'BONUS': {rewardType:'points', value:25, message:'BONUS 25 bodů'},
+    '8B': {rewardType:'text', value: MAG['8B'], message:'Tajemství magikána'},
+    'SECRET1': {rewardType:'text', value: MAG['SECRET1'], message:'Strašidelný vzkaz magikána'},
+    'Used': {rewardType:'points', value:5, message:'5 bodů'},
+    'END': {rewardType:'endgame', message:'Zadej passcode 1404'}
+  };
+  for(const k in defaults) if(!codes[k]) codes[k] = defaults[k];
   saveCodes();
 }
 seedCodes();
 
-function appendLog(msg, opts={}){ const p=document.createElement('p'); if(opts.html)p.innerHTML=msg; else p.textContent=msg; if(opts.class)p.className=opts.class; logEl.appendChild(p); logEl.scrollTop=logEl.scrollHeight; }
-function renderStatus(){ pointsEl.textContent=player.points; usedCountEl.textContent=player.usedCodes.length; adminBadge.textContent=player.isAdmin?'ADMIN':'USER'; }
-appendLog('Vítej v Terminal Codes. Napiš HELP pro nápovědu.');
+// ==== UI helpers ====
+function appendLog(msg, opts = {}) {
+  const p = document.createElement('p');
+  if(opts.html) p.innerHTML = msg; else p.textContent = msg;
+  if(opts.className) p.className = opts.className;
+  logEl.appendChild(p);
+  logEl.scrollTop = logEl.scrollHeight;
+}
+function renderStatus(){
+  pointsEl.textContent = player.points;
+  usedCountEl.textContent = player.usedCodes.length;
+  adminBadge.textContent = player.isAdmin ? 'ADMIN' : 'USER';
+  usernameDisplay.textContent = localStorage.getItem(SK_USERNAME) || '(nezadáno)';
+}
+appendLog('Vítej — zadej své uživatelské jméno (prompt se objeví při načtení).');
 renderStatus();
 
-function processLine(line){
-  const raw=line.trim(); if(!raw) return; appendLog('> '+raw);
-  const parts=raw.split(/\s+/), cmd=parts[0].toUpperCase();
+// ==== Username prompt & presence ====
+function ensureUsername(){
+  let uname = localStorage.getItem(SK_USERNAME);
+  if(!uname){
+    uname = prompt('Zadej svoje username (bude viditelné v admin panelu):') || ('User' + Math.floor(Math.random()*999));
+    localStorage.setItem(SK_USERNAME, uname);
+  }
+  usernameDisplay.textContent = uname;
+  player.username = uname;
+  savePlayer();
+  if(firebaseEnabled) registerPresence();
+}
+ensureUsername();
 
-  if(cmd==='HELP'){ appendLog('HELP, RESET, MYCODES'); return; }
-  if(cmd==='RESET'){ localStorage.removeItem(SK_PLAYER); player={points:0,usedCodes:[],isAdmin:false}; savePlayer(); renderStatus(); appendLog('Data smazána.'); return; }
-  if(cmd==='MYCODES'){ appendLog('Použité kódy: '+(player.usedCodes.length?player.usedCodes.join(', '):'(žádné)')); return; }
+// geolocation optional
+el('shareLoc').addEventListener('click', ()=>{
+  if(!navigator.geolocation){ appendLog('Geolokace není podporována'); return; }
+  navigator.geolocation.getCurrentPosition(pos=>{
+    const coords = `${pos.coords.latitude.toFixed(5)},${pos.coords.longitude.toFixed(5)}`;
+    player.location = coords; savePlayer();
+    appendLog('Poloha uložena: ' + coords);
+  }, err=>{
+    appendLog('Nepodařilo se získat polohu: ' + err.message);
+  });
+});
 
-  if(raw==='Filip'){ player.isAdmin=true; savePlayer(); renderStatus(); openAdmin(); return; }
-  if(raw==='Orsag'){ player.isAdmin=false; savePlayer(); renderStatus(); appendLog('Admin status zrušen. Jsi USER.'); closeAdminModal(); return; }
+// ==== Core commands & code checking ====
+function processLine(raw){
+  const line = (raw||'').trim();
+  if(!line) return;
+  appendLog('> ' + line);
+  const parts = line.split(/\s+/);
+  const cmd = parts[0].toUpperCase();
 
-  checkCode(raw);
+  if(cmd === 'HELP'){ appendLog('Příkazy: HELP, RESET, MYCODES, FILIP (admin), ORSAG (user)'); return; }
+  if(cmd === 'RESET'){ localStorage.removeItem(SK_PLAYER); localStorage.removeItem(SK_CODES); localStorage.removeItem(SK_USERNAME); location.reload(); return; }
+  if(cmd === 'MYCODES'){ appendLog('Použité kódy: ' + (player.usedCodes.length ? player.usedCodes.join(', ') : '(žádné)')); return; }
+
+  if(line === 'Filip'){ player.isAdmin = true; savePlayer(); renderStatus(); openAdmin(); return; }
+  if(line === 'Orsag'){ player.isAdmin = false; savePlayer(); renderStatus(); appendLog('Admin status zrušen.'); closeAdminModal(); return; }
+
+  // check code
+  checkCode(line);
 }
 
 function checkCode(code){
-  if(code==='Orsag'){ player.isAdmin=false; savePlayer(); renderStatus(); appendLog('Admin status zrušen. Jsi USER.'); closeAdminModal(); return; }
-  if(player.usedCodes.includes(code)){ appendLog('Tento kód už byl použit.'); beep(); return; }
-  if(!codes[code]){ appendLog('Kód neexistuje.'); beep(0.03,300,0.06); return; }
+  if(code === 'Orsag'){ player.isAdmin = false; savePlayer(); renderStatus(); appendLog('Admin status zrušen.'); closeAdminModal(); return; }
+  if(player.usedCodes.includes(code)){ appendLog('Tento kód už byl použit.'); return; }
+  if(!codes[code]){ appendLog('Kód neexistuje.'); return; }
 
-  const info=codes[code];
-  player.usedCodes.push(code); savePlayer();
-
-  if(info.rewardType==='points'){ const pts=Number(info.value)||0; player.points+=pts; savePlayer(); appendLog(`OK — ${pts} bodů. ${info.message||''}`); beep(0.08,900,0.12);}
-  else if(info.rewardType==='text'){ appendLog('--- Magikánův vzkaz ---'); appendLog(info.value,{class:'code-value'}); appendLog('--- konec vzkazu ---'); beep(); }
-  else if(info.rewardType==='sound'){ appendLog(info.message||'Přehrávám zvuk'); try{ new Audio(info.value).play(); }catch(e){ appendLog('Nepodařilo se přehrát zvuk.');} }
-  else if(info.rewardType==='endgame'){ const pass=prompt('Zadej passcode:'); if(pass==='1404'){ appendLog('Hra ukončena. Děkujeme!'); } else appendLog('Špatný passcode');}
-
-  renderStatus();
+  const info = codes[code];
+  player.usedCodes.push(code);
+  if(info.rewardType === 'points'){
+    const pts = Number(info.value) || 0;
+    player.points += pts;
+    appendLog(`OK — získal jsi ${pts} bodů. ${info.message||''}`);
+  } else if(info.rewardType === 'text'){
+    appendLog('--- Magikánův vzkaz ---');
+    appendLog(info.value, {className:'code-value'});
+    appendLog('--- konec vzkazu ---');
+  } else if(info.rewardType === 'sound'){
+    appendLog(info.message || 'Přehrávám zvuk...');
+    try{ new Audio(info.value).play(); }catch(e){ appendLog('Nepodařilo se přehrát zvuk.'); }
+  } else if(info.rewardType === 'endgame'){
+    const pass = prompt('Zadej passcode:');
+    if(pass === '1404'){ appendLog('Hra ukončena. Děkujeme!'); } else appendLog('Špatný passcode.');
+  }
+  savePlayer();
 }
 
-// Admin modal
-function openAdmin(){ modal.style.display='flex'; renderAdminTables(); }
-function closeAdminModal(){ modal.style.display='none'; }
-closeModal.addEventListener('click', closeAdminModal);
-window.addEventListener('click',e=>{ if(e.target===modal) closeAdminModal(); });
+// ==== Admin modal functions ====
+function openAdmin(){ adminModal.style.display = 'flex'; renderAdminTables(); }
+function closeAdminModal(){ adminModal.style.display = 'none'; }
+closeAdmin.addEventListener('click', closeAdminModal);
+window.addEventListener('click', e => { if(e.target === adminModal) closeAdminModal(); });
 
 function renderAdminTables(){
-  codesTableBody.innerHTML='';
-  for(const c in codes){
-    const tr=document.createElement('tr');
-    const val=(codes[c].rewardType==='text'?`<pre class="code-value">${codes[c].value||''}</pre>`:(codes[c].value||''));
-    tr.innerHTML=`<td>${c}</td><td>${codes[c].rewardType}</td><td>${val}</td>
-      <td><button onclick="deleteCode('${c}')">Remove</button></td>`;
+  // codes
+  codesTableBody.innerHTML = '';
+  for(const k in codes){
+    const tr = document.createElement('tr');
+    const val = (codes[k].rewardType === 'text') ? `<pre class="code-value">${codes[k].value||''}</pre>` : (codes[k].value||'');
+    tr.innerHTML = `<td>${k}</td><td>${codes[k].rewardType}</td><td>${val}</td>
+      <td><button data-code="${k}" class="removeCodeBtn">Remove</button></td>`;
     codesTableBody.appendChild(tr);
   }
+  // bind remove buttons
+  document.querySelectorAll('.removeCodeBtn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{ const c = btn.dataset.code; if(confirm('Smazat kód '+c+'?')){ delete codes[c]; saveCodes(); if(firebaseEnabled) removeRemoteCode(c); renderAdminTables(); appendLog('Kód '+c+' smazán.'); }});
+  });
 
-  playersTableBody.innerHTML='';
-  const p={name:'Player',points:player.points,usedCodes:player.usedCodes,location:player.location||'N/A',isAdmin:player.isAdmin};
-  const tr=document.createElement('tr');
-  tr.innerHTML=`<td>${p.name}</td><td>${p.points}</td><td>${p.usedCodes.join(', ')}</td><td>${p.location}</td><td>${p.isAdmin?'ADMIN':'USER'}</td><td><button onclick="toggleRole()">Change Role</button></td>`;
+  // players table (we show local + remote if firebase)
+  playersTableBody.innerHTML = '';
+  // local player row
+  const p = player;
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td>${p.username||'Player'}</td><td>${p.points}</td><td>${p.usedCodes.join(', ')}</td><td>${p.location||'N/A'}</td><td>${p.isAdmin?'ADMIN':'USER'}</td><td><button class="toggleRoleBtn">Change Role</button></td>`;
   playersTableBody.appendChild(tr);
+  document.querySelector('.toggleRoleBtn').addEventListener('click', ()=>{ toggleRoleFor(p.username); });
+
+  // if firebase active, remote players rows will be appended by firebase listeners
 }
 
-function deleteCode(code){ if(confirm('Chceš opravdu smazat kód "'+code+'"?')){ delete codes[code]; saveCodes(); renderAdminTables(); appendLog('Kód '+code+' smazán.'); } }
-function toggleRole(){ player.isAdmin=!player.isAdmin; savePlayer(); renderStatus(); renderAdminTables(); appendLog('Role hráče změněna na: '+(player.isAdmin?'ADMIN':'USER')); }
+// toggle role locally or remote
+function toggleRoleFor(username){
+  if(username === player.username){
+    player.isAdmin = !player.isAdmin; savePlayer(); renderStatus(); renderAdminTables(); appendLog('Role změněna: ' + (player.isAdmin ? 'ADMIN' : 'USER'));
+    if(firebaseEnabled) updateRemotePlayer(player.uid, { isAdmin: player.isAdmin });
+  } else {
+    // remote: flip via firebase
+    if(firebaseEnabled){
+      // find player by username in remote and toggle
+      db.ref('players').orderByChild('username').equalTo(username).once('value', snap=>{
+        snap.forEach(child=>{
+          const data = child.val();
+          const key = child.key;
+          db.ref('players/'+key+'/isAdmin').set(!data.isAdmin);
+        });
+      });
+    } else {
+      appendLog('Firebase neaktivní — nelze změnit remote roli.');
+    }
+  }
+}
 
-addCodeBtn.addEventListener('click',()=>{
-  const c=newCodeInput.value.trim(); if(!c){ alert('Zadej název kódu'); return; }
-  codes[c]={rewardType:newType.value,value:newValue.value,message:newValue.value};
-  saveCodes(); newCodeInput.value=''; newValue.value=''; renderAdminTables(); appendLog('Kód '+c+' přidán.'); 
+// add code button
+addCodeBtn.addEventListener('click', ()=>{
+  const c = newCodeInput.value.trim();
+  if(!c){ alert('Zadej kód'); return; }
+  codes[c] = { rewardType: newType.value, value: newValue.value, message: newValue.value };
+  saveCodes(); renderAdminTables(); appendLog('Kód '+c+' přidán.');
+  newCodeInput.value=''; newValue.value='';
+  if(firebaseEnabled) pushCodeToRemote(c, codes[c]);
 });
 
-sendBtn.addEventListener('click',()=>{ processLine(input.value); input.value=''; input.focus(); });
-input.addEventListener('keydown',e=>{ if(e.key==='Enter'){ processLine(input.value); input.value=''; } });
+// messaging
+sendMsgBtn.addEventListener('click', ()=> sendMessage(true));
+sendMsgLocalBtn.addEventListener('click', ()=> sendMessage(false));
+
+function sendMessage(useFirebase){
+  const text = msgText.value.trim(); if(!text) return;
+  const to = msgTo.value.trim() || 'all';
+  const payload = {
+    from: localStorage.getItem(SK_USERNAME) || 'admin',
+    to: to,
+    text: text,
+    ts: Date.now()
+  };
+  if(useFirebase && firebaseEnabled){
+    const key = db.ref('messages').push(payload).key;
+    appendLog(`(admin) message sent → ${to}`);
+  } else {
+    // local only: append to local 'local_messages' and display locally
+    appendLog(`(local admin) → ${to}: ${text}`);
+  }
+  msgText.value=''; msgTo.value='';
+}
+
+// send message handler for clients (display if to==all or to==username)
+function handleIncomingMessage(msg){
+  if(!msg) return;
+  const to = msg.to || 'all';
+  const uname = localStorage.getItem(SK_USERNAME);
+  if(to === 'all' || to === uname){
+    appendLog(`💬 (admin→${to}): ${msg.text}`);
+  }
+}
+
+// Force sync: push local codes and player to remote
+forceSyncBtn.addEventListener('click', ()=>{ if(firebaseEnabled){ pushCodesToRemote(); pushPlayerToRemote(); appendLog('Force sync proveden.'); } else appendLog('Firebase není nakonfigurován.'); });
+
+// ==== Firebase integration helpers (optional) ====
+// To enable Firebase: uncomment firebase scripts at top and call initFirebase(firebaseConfig)
+function initFirebase(cfg){
+  if(!window.firebase){ appendLog('Firebase scripts nejsou načteny. Zkontroluj, že jsi odkomentoval Firebase <script> tagy.'); return; }
+  try{
+    firebase.initializeApp(cfg);
+    db = firebase.database();
+    firebaseEnabled = true;
+    realtimeStatus.textContent = 'ON';
+    document.getElementById('firebaseInfo').textContent = 'Firebase connected';
+    appendLog('Firebase inicializováno — realtime ON.');
+    // setup listeners
+    setupRemoteListeners();
+    // push local state once
+    pushCodesToRemote();
+    pushPlayerToRemote();
+  }catch(e){ appendLog('Chyba při inicializaci Firebase: ' + e.message); }
+}
+
+// push all codes
+function pushCodesToRemote(){
+  if(!firebaseEnabled) return;
+  db.ref('codes').set(codes);
+}
+
+// push a single code
+function pushCodeToRemote(code, obj){
+  if(!firebaseEnabled) return;
+  db.ref('codes/'+code).set(obj);
+}
+
+// remove code remote
+function removeRemoteCode(code){
+  if(!firebaseEnabled) return;
+  db.ref('codes/'+code).remove();
+}
+
+// push player
+function pushPlayerToRemote(){
+  if(!firebaseEnabled) return;
+  const uid = player.uid;
+  db.ref('players/'+uid).set({
+    uid: uid,
+    username: player.username,
+    points: player.points,
+    usedCodes: player.usedCodes,
+    location: player.location || null,
+    isAdmin: player.isAdmin || false,
+    lastSeen: Date.now()
+  });
+  // onDisconnect cleanup
+  db.ref('players/'+uid).onDisconnect().remove();
+}
+
+// update remote player partial
+function updateRemotePlayer(uid, obj){
+  if(!firebaseEnabled) return;
+  db.ref('players/'+uid).update(obj);
+}
+
+// setup remote listeners for codes, players, messages
+function setupRemoteListeners(){
+  if(!firebaseEnabled) return;
+  // codes: overwrite local when remote changes
+  db.ref('codes').on('value', snap=>{
+    const remoteCodes = snap.val() || {};
+    codes = remoteCodes;
+    saveCodes();
+    renderAdminTables();
+    appendLog('Kódy synchronizovány z remote.');
+  });
+
+  // players: reflect list in admin UI
+  db.ref('players').on('value', snap=>{
+    const data = snap.val() || {};
+    // render players table (append remote players after local)
+    renderAdminTables(); // draws local row first
+    // append remote rows except local
+    for(const uid in data){
+      const p = data[uid];
+      if(p.username === player.username) continue; // local already shown
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${p.username}</td><td>${p.points}</td><td>${(p.usedCodes||[]).join(', ')}</td><td>${p.location||'N/A'}</td><td>${p.isAdmin?'ADMIN':'USER'}</td><td><button class="kickBtn" data-uid="${uid}">Message</button></td>`;
+      playersTableBody.appendChild(tr);
+    }
+    // bind message buttons
+    document.querySelectorAll('.kickBtn').forEach(btn=>{
+      btn.addEventListener('click', ()=>{ const uid = btn.dataset.uid; const to = data[uid].username; msgTo.value = to; msgText.focus(); });
+    });
+  });
+
+  // messages: all clients listen
+  db.ref('messages').on('child_added', snap=>{
+    const msg = snap.val();
+    handleIncomingMessage(msg);
+  });
+}
+
+// ==== Auto init Firebase? ====
+// Put your Firebase config object here and uncomment the call to initFirebase.
+// Example config (replace with your actual project values):
+/*
+const FIREBASE_CONFIG = {
+  apiKey: "AIza....",
+  authDomain: "your-app.firebaseapp.com",
+  databaseURL: "https://your-app-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "your-app",
+  storageBucket: "your-app.appspot.com",
+  messagingSenderId: "...",
+  appId: "..."
+};
+initFirebase(FIREBASE_CONFIG);
+*/
+
+// ==== Remote message display (if Firebase isn't configured, admin can still send local messages) ====
+// When a message is received via Firebase, handleIncomingMessage() displays it for matching recipients.
+
+// ==== Input hooks ====
+sendBtn.addEventListener('click', ()=>{ processLine(input.value); input.value=''; input.focus(); });
+input.addEventListener('keydown', e => { if(e.key === 'Enter'){ processLine(input.value); input.value=''; }});
+
+// when local player changes (username), register presence remote if available
+function registerPresence(){
+  if(!firebaseEnabled) return;
+  pushPlayerToRemote();
+}
+
+// final render
+renderStatus();
 
 </script>
 </body>
