@@ -66,6 +66,18 @@
                 transform: scale(1);
             }
         }
+        .reset-btn {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #ff6600;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .reset-btn:hover {
+            background-color: #ff3300;
+        }
     </style>
 </head>
 <body>
@@ -76,6 +88,7 @@
             <span>> </span>
             <input type="text" id="userInput" placeholder="Enter code..." />
         </div>
+        <button class="reset-btn" id="resetBtn">Loď Reset</button>
     </div>
 
     <div class="admin-panel" id="adminPanel">
@@ -85,59 +98,51 @@
     </div>
 
     <script>
+        // Předem definované kódy, které uživatel může zadávat
         const correctCodes = [
-            'ABC123', 'DEF456', 'FILIP', 'XYZ789', 'GHI012', 
+            'ABC123', 'DEF456', 'FILIP', 'XYZ789', 'GHI012',
             'LMN345', 'PQR678', 'TUV910', 'JKL234', 'STU567',
             'MNO890', 'KLM123', 'FGH456', 'IJK789', 'ABC345',
             'XYZ123', 'RST456', 'QWE789', 'POI123', 'ASD456',
-            'ZXC789', 'BNM123', 'RTY456', 'UIO789', 'FGH123',
-            'CVB456', 'XCV789', 'JKL890', 'FGH567', 'LKM345',
-            'TGG123', 'VFR456', 'WSX789', 'YHN890', 'MNB567',
-            'PLK123', 'QAZ456', 'EDC789', 'RFG012', 'VBC234',
-            'XCV567', 'BGT890', 'HJK234', 'LOP678', 'MKO123',
-            'QWERTY', 'ZXCVBN', '123ABC', '321DEF', '456GHI',
-            '789JKL', '135QWE', '246RTY', '789POI', '357ASD',
-            '159ZXC', '753BNM', '951QAZ', '753EDC', '369FGH'
-        ]; // Expanded list of predefined codes
+            'LMN789', 'UVW345', 'QRS678', 'XYZ890', 'DEF321',
+            'JKL567', 'NOP678', 'KLM890', 'MNB123', 'TYU456',
+            'WSX789', 'ERT345', 'POI567', 'PLM678', 'ADQ123',
+            'FRT456', 'GHP789', 'BVC234', 'XCV789', 'JKT456'
+        ];
 
-        const adminPanel = document.getElementById('adminPanel');
-        const closeAdminBtn = document.getElementById('closeAdmin');
+        // Počet bodů, které uživatel má
+        let userPoints = 0;
+
         const outputDiv = document.getElementById('output');
         const userInput = document.getElementById('userInput');
+        const adminPanel = document.getElementById('adminPanel');
+        const closeAdminBtn = document.getElementById('closeAdmin');
+        const resetBtn = document.getElementById('resetBtn');
 
-        let codeCounter = 0;
-
-        // Generate a random index from the predefined codes
-        function getRandomCode() {
-            return correctCodes[Math.floor(Math.random() * correctCodes.length)];
+        // Zobrazí informaci o bodech uživatele
+        function displayUserPoints() {
+            outputDiv.innerHTML += `<br><span style="color: #00ff00;">Your Points: ${userPoints}</span>`;
         }
 
-        // Display random codes in the terminal
-        function displayRandomCodes() {
-            let randomCodes = '';
-            for (let i = 0; i < 30; i++) {
-                randomCodes += getRandomCode() + '<br>';
-            }
-            outputDiv.innerHTML = randomCodes;
-        }
-
-        // Validate the entered code
+        // Ověří, zda je kód správný
         function validateCode(code) {
             if (correctCodes.includes(code)) {
+                userPoints += 10; // Uživateli přidáme body za správný kód
+                outputDiv.innerHTML += '<br><span style="color: #00ff00;">Correct Code! You earned 10 points.</span>';
+                
                 if (code === 'FILIP') {
-                    adminPanel.style.display = 'block'; // Open the admin panel
-                    outputDiv.innerHTML += '<br><span style="color: #00ff00;">Correct Code! Admin Panel Unlocked!</span>';
-                } else {
-                    outputDiv.innerHTML += '<br><span style="color: #00ff00;">Correct Code!</span>';
+                    adminPanel.style.display = 'block'; // Odemknutí admin panelu
+                    outputDiv.innerHTML += '<br><span style="color: #00ff00;">Admin Panel Unlocked!</span>';
                 }
             } else {
                 outputDiv.innerHTML += '<br><span style="color: #ff0000;">Incorrect Code!</span>';
             }
-            userInput.value = ''; // Clear the input
-            outputDiv.scrollTop = outputDiv.scrollHeight; // Auto-scroll to the bottom
+            displayUserPoints(); // Aktualizuj body uživatele
+            userInput.value = ''; // Vymaže vstupní pole
+            outputDiv.scrollTop = outputDiv.scrollHeight; // Autom. posouvání na konec
         }
 
-        // Event listener for user input
+        // Událost pro zadávání kódu
         userInput.addEventListener('keydown', function(event) {
             if (event.key === 'Enter') {
                 const inputCode = userInput.value.trim();
@@ -145,14 +150,23 @@
             }
         });
 
-        // Close the admin panel
+        // Uzavření admin panelu
         closeAdminBtn.addEventListener('click', function() {
             adminPanel.style.display = 'none';
             outputDiv.innerHTML += '<br><span style="color: #ff0000;">Admin Panel Closed</span>';
         });
 
-        // Generate and display random codes when the page loads
-        displayRandomCodes();
+        // Loď Reset - Resetování bodů
+        resetBtn.addEventListener('click', function() {
+            userPoints = 0;
+            outputDiv.innerHTML += '<br><span style="color: #ff6600;">Points have been reset to 0. Start earning again!</span>';
+            displayUserPoints();
+        });
+
+        // Zobrazí úvodní text a body uživatele při načtení
+        outputDiv.innerHTML = '<span>Welcome to the terminal! Enter a valid code to earn points.</span>';
+        displayUserPoints();
+
     </script>
 
 </body>
