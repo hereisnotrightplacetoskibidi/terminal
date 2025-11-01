@@ -105,6 +105,7 @@
         <button class="admin-button" id="addCode">Add New Code</button>
         <button class="admin-button" id="deleteCode">Delete Code</button>
         <button class="admin-button" id="viewAllUsers">View All Users' Points</button>
+        <button class="admin-button" id="closeAdminPanel">Close Panel</button> <!-- Close Button -->
         <div id="adminOutput"></div>
     </div>
 
@@ -189,6 +190,12 @@
             adminOutput.innerHTML = `<h4>User Points:</h4><p>You currently have ${userPoints} points.</p>`;
         }
 
+        // Close the Admin Panel
+        function closeAdminPanel() {
+            adminPanel.style.display = 'none';  // Hide the admin panel
+            outputDiv.innerHTML = 'Admin Panel Closed';
+        }
+
         // Validate Code Function (for normal users)
         function validateCode(code) {
             const foundCode = userCodes.find(c => c.code === code);
@@ -212,52 +219,6 @@
             }
         }
 
-        // Shop Functions
-
-        // Buy Double Points for 10 minutes
-        function buyDoublePoints() {
-            if (userPoints >= 20) {
-                userPoints -= 20;
-                localStorage.setItem('userPoints', userPoints);
-                shopOutput.innerHTML = `<p>You bought Double Points for 10 minutes! You now have ${userPoints} points.</p>`;
-            } else {
-                shopOutput.innerHTML = `<p>You don't have enough points for Double Points!</p>`;
-            }
-        }
-
-        // Buy Extra Achievement
-        function buyAchievement() {
-            if (userPoints >= 15) {
-                userPoints -= 15;
-                localStorage.setItem('userPoints', userPoints);
-                shopOutput.innerHTML = `<p>You bought an Extra Achievement! You now have ${userPoints} points.</p>`;
-            } else {
-                shopOutput.innerHTML = `<p>You don't have enough points for an Achievement!</p>`;
-            }
-        }
-
-        // Buy XP Boost
-        function buyXPBoost() {
-            if (userPoints >= 10) {
-                userPoints -= 10;
-                localStorage.setItem('userPoints', userPoints);
-                shopOutput.innerHTML = `<p>You bought an XP Boost! You now have ${userPoints} points.</p>`;
-            } else {
-                shopOutput.innerHTML = `<p>You don't have enough points for an XP Boost!</p>`;
-            }
-        }
-
-        // Buy Exclusive Code Unlock
-        function buyExclusiveCode() {
-            if (userPoints >= 30) {
-                userPoints -= 30;
-                localStorage.setItem('userPoints', userPoints);
-                shopOutput.innerHTML = `<p>You bought an Exclusive Code Unlock! You now have ${userPoints} points.</p>`;
-            } else {
-                shopOutput.innerHTML = `<p>You don't have enough points for an Exclusive Code Unlock!</p>`;
-            }
-        }
-
         // Event Listener for user input
         userInput.addEventListener('keydown', function(event) {
             if (event.key === 'Enter') {
@@ -273,7 +234,9 @@
         document.getElementById('addCode').addEventListener('click', addNewCode);
         document.getElementById('deleteCode').addEventListener('click', deleteCode);
         document.getElementById('viewAllUsers').addEventListener('click', viewAllUsersPoints);
+        document.getElementById('closeAdminPanel').addEventListener('click', closeAdminPanel);  // Close panel button
 
+        // Event Listeners for Shop Buttons
         // Event Listeners for Shop Buttons
         document.getElementById('doublePointsBtn').addEventListener('click', buyDoublePoints);
         document.getElementById('achievementBtn').addEventListener('click', buyAchievement);
