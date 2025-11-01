@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="cs">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel with Code Tracker</title>
+    <title>Admin Panel with Code Tracker & Shop</title>
     <style>
         body {
             font-family: 'Courier New', monospace;
@@ -58,6 +57,31 @@
         .admin-button:hover {
             background-color: #ff3300;
         }
+        #shopPanel {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #333;
+            width: 80%;
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+        }
+        .shop-item {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #444;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+        }
+        .shop-item button {
+            background-color: #00ff00;
+            color: black;
+            padding: 5px 10px;
+            border: none;
+            cursor: pointer;
+        }
+        .shop-item button:hover {
+            background-color: #00cc00;
+        }
         #output {
             color: #00ff00;
             font-size: 14px;
@@ -84,6 +108,28 @@
         <div id="adminOutput"></div>
     </div>
 
+    <!-- Shop Panel -->
+    <div id="shopPanel">
+        <h3>Shop</h3>
+        <div class="shop-item">
+            <p>Double Points for 10 minutes</p>
+            <button id="doublePointsBtn">Buy for 20 points</button>
+        </div>
+        <div class="shop-item">
+            <p>Extra Achievement</p>
+            <button id="achievementBtn">Buy for 15 points</button>
+        </div>
+        <div class="shop-item">
+            <p>XP Boost</p>
+            <button id="xpBoostBtn">Buy for 10 points</button>
+        </div>
+        <div class="shop-item">
+            <p>Exclusive Code Unlock</p>
+            <button id="exclusiveCodeBtn">Buy for 30 points</button>
+        </div>
+        <div id="shopOutput"></div>
+    </div>
+
     <script>
         let userPoints = 0;
         let userCodes = [];  // Track codes entered by users
@@ -91,10 +137,15 @@
         const userInput = document.getElementById('userInput');
         const adminPanel = document.getElementById('adminPanel');
         const adminOutput = document.getElementById('adminOutput');
+        const shopPanel = document.getElementById('shopPanel');
+        const shopOutput = document.getElementById('shopOutput');
 
         // Load data from localStorage
         if (localStorage.getItem('userCodes')) {
             userCodes = JSON.parse(localStorage.getItem('userCodes'));
+        }
+        if (localStorage.getItem('userPoints')) {
+            userPoints = parseInt(localStorage.getItem('userPoints'));
         }
 
         // Helper to display user points
@@ -161,6 +212,52 @@
             }
         }
 
+        // Shop Functions
+
+        // Buy Double Points for 10 minutes
+        function buyDoublePoints() {
+            if (userPoints >= 20) {
+                userPoints -= 20;
+                localStorage.setItem('userPoints', userPoints);
+                shopOutput.innerHTML = `<p>You bought Double Points for 10 minutes! You now have ${userPoints} points.</p>`;
+            } else {
+                shopOutput.innerHTML = `<p>You don't have enough points for Double Points!</p>`;
+            }
+        }
+
+        // Buy Extra Achievement
+        function buyAchievement() {
+            if (userPoints >= 15) {
+                userPoints -= 15;
+                localStorage.setItem('userPoints', userPoints);
+                shopOutput.innerHTML = `<p>You bought an Extra Achievement! You now have ${userPoints} points.</p>`;
+            } else {
+                shopOutput.innerHTML = `<p>You don't have enough points for an Achievement!</p>`;
+            }
+        }
+
+        // Buy XP Boost
+        function buyXPBoost() {
+            if (userPoints >= 10) {
+                userPoints -= 10;
+                localStorage.setItem('userPoints', userPoints);
+                shopOutput.innerHTML = `<p>You bought an XP Boost! You now have ${userPoints} points.</p>`;
+            } else {
+                shopOutput.innerHTML = `<p>You don't have enough points for an XP Boost!</p>`;
+            }
+        }
+
+        // Buy Exclusive Code Unlock
+        function buyExclusiveCode() {
+            if (userPoints >= 30) {
+                userPoints -= 30;
+                localStorage.setItem('userPoints', userPoints);
+                shopOutput.innerHTML = `<p>You bought an Exclusive Code Unlock! You now have ${userPoints} points.</p>`;
+            } else {
+                shopOutput.innerHTML = `<p>You don't have enough points for an Exclusive Code Unlock!</p>`;
+            }
+        }
+
         // Event Listener for user input
         userInput.addEventListener('keydown', function(event) {
             if (event.key === 'Enter') {
@@ -176,6 +273,12 @@
         document.getElementById('addCode').addEventListener('click', addNewCode);
         document.getElementById('deleteCode').addEventListener('click', deleteCode);
         document.getElementById('viewAllUsers').addEventListener('click', viewAllUsersPoints);
+
+        // Event Listeners for Shop Buttons
+        document.getElementById('doublePointsBtn').addEventListener('click', buyDoublePoints);
+        document.getElementById('achievementBtn').addEventListener('click', buyAchievement);
+        document.getElementById('xpBoostBtn').addEventListener('click', buyXPBoost);
+        document.getElementById('exclusiveCodeBtn').addEventListener('click', buyExclusiveCode);
 
         // Initial output
         displayUserPoints();
