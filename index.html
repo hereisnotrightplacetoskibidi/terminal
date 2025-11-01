@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Terminal App</title>
+    <title>Terminal App with Shop</title>
     <style>
         body {
             font-family: 'Courier New', monospace;
@@ -13,16 +13,18 @@
             padding: 0;
             height: 100vh;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
         }
         .terminal {
             width: 80%;
-            height: 80%;
+            height: 50%;
             border: 2px solid #00ff00;
             background-color: black;
             padding: 20px;
             overflow-y: auto;
+            margin-bottom: 30px;
         }
         .input-line {
             display: flex;
@@ -46,6 +48,7 @@
             border: 2px solid #00ff00;
             padding: 20px;
             z-index: 1000;
+            animation: slideIn 0.5s ease;
         }
         .admin-panel button {
             background-color: #ff0000;
@@ -54,6 +57,14 @@
             border: none;
             cursor: pointer;
             animation: pulse 1.5s infinite;
+        }
+        @keyframes slideIn {
+            0% {
+                transform: translateY(-100%);
+            }
+            100% {
+                transform: translateY(0);
+            }
         }
         @keyframes pulse {
             0% {
@@ -66,6 +77,39 @@
                 transform: scale(1);
             }
         }
+        .shop-container {
+            width: 80%;
+            max-width: 600px;
+            background-color: #2c2c2c;
+            padding: 20px;
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            animation: fadeIn 0.5s ease;
+            margin-top: 20px;
+        }
+        .shop-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            background-color: #333;
+            margin: 10px 0;
+            border-radius: 5px;
+            transition: transform 0.2s ease-in-out;
+        }
+        .shop-item:hover {
+            transform: scale(1.05);
+        }
+        .shop-item button {
+            background-color: #ff6600;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .shop-item button:hover {
+            background-color: #ff3300;
+        }
         .reset-btn {
             margin-top: 20px;
             padding: 10px 20px;
@@ -74,9 +118,19 @@
             border: none;
             cursor: pointer;
             font-size: 16px;
+            transition: transform 0.2s ease;
         }
         .reset-btn:hover {
             background-color: #ff3300;
+            transform: scale(1.05);
+        }
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+            }
+            100% {
+                opacity: 1;
+            }
         }
     </style>
 </head>
@@ -88,7 +142,23 @@
             <span>> </span>
             <input type="text" id="userInput" placeholder="Enter code..." />
         </div>
-        <button class="reset-btn" id="resetBtn">Loď Reset</button>
+    </div>
+
+    <div class="shop-container" id="shop">
+        <h3>Welcome to the Shop!</h3>
+        <p>You have <span id="userPointsDisplay">0</span> points.</p>
+        <div class="shop-item">
+            <span>Super Upgrade</span>
+            <button id="item1">Buy for 50 points</button>
+        </div>
+        <div class="shop-item">
+            <span>Extra Code</span>
+            <button id="item2">Buy for 100 points</button>
+        </div>
+        <div class="shop-item">
+            <span>Unlock Admin Panel</span>
+            <button id="item3">Buy for 150 points</button>
+        </div>
     </div>
 
     <div class="admin-panel" id="adminPanel">
@@ -107,7 +177,8 @@
             'LMN789', 'UVW345', 'QRS678', 'XYZ890', 'DEF321',
             'JKL567', 'NOP678', 'KLM890', 'MNB123', 'TYU456',
             'WSX789', 'ERT345', 'POI567', 'PLM678', 'ADQ123',
-            'FRT456', 'GHP789', 'BVC234', 'XCV789', 'JKT456'
+            'FRT456', 'GHP789', 'BVC234', 'XCV789', 'JKT456',
+            'reset' // Kód pro reset bodů
         ];
 
         // Počet bodů, které uživatel má
@@ -117,18 +188,23 @@
         const userInput = document.getElementById('userInput');
         const adminPanel = document.getElementById('adminPanel');
         const closeAdminBtn = document.getElementById('closeAdmin');
-        const resetBtn = document.getElementById('resetBtn');
+        const userPointsDisplay = document.getElementById('userPointsDisplay');
 
-        // Zobrazí informaci o bodech uživatele
+        // Funkce pro zobrazení bodů uživatele
         function displayUserPoints() {
-            outputDiv.innerHTML += `<br><span style="color: #00ff00;">Your Points: ${userPoints}</span>`;
+            userPointsDisplay.textContent = userPoints;
         }
 
-        // Ověří, zda je kód správný
+        // Ověření kódu
         function validateCode(code) {
             if (correctCodes.includes(code)) {
-                userPoints += 10; // Uživateli přidáme body za správný kód
-                outputDiv.innerHTML += '<br><span style="color: #00ff00;">Correct Code! You earned 10 points.</span>';
+                if (code === 'reset') {
+                    userPoints = 0; // Resetuje body
+                    outputDiv.innerHTML += '<br><span style="color: #ff6600;">Your points have been reset!</span>';
+                } else {
+                    userPoints += 10; // Přidá body za správný kód
+                    outputDiv.innerHTML += '<br><span style="color: #00ff00;">Correct Code! You earned 10 points.</span>';
+                }
                 
                 if (code === 'FILIP') {
                     adminPanel.style.display = 'block'; // Odemknutí admin panelu
@@ -137,12 +213,12 @@
             } else {
                 outputDiv.innerHTML += '<br><span style="color: #ff0000;">Incorrect Code!</span>';
             }
-            displayUserPoints(); // Aktualizuj body uživatele
-            userInput.value = ''; // Vymaže vstupní pole
-            outputDiv.scrollTop = outputDiv.scrollHeight; // Autom. posouvání na konec
+            displayUserPoints(); // Aktualizuj body
+            userInput.value = ''; // Vymaže vstup
+            outputDiv.scrollTop = outputDiv.scrollHeight; // Posouvání na konec
         }
 
-        // Událost pro zadávání kódu
+        // Událost pro zadání kódu
         userInput.addEventListener('keydown', function(event) {
             if (event.key === 'Enter') {
                 const inputCode = userInput.value.trim();
@@ -151,16 +227,39 @@
         });
 
         // Uzavření admin panelu
-        closeAdminBtn.addEventListener('click', function() {
-            adminPanel.style.display = 'none';
+        closeAdminBtn.addEventListener('click', function() {adminPanel.style.display = 'none';
             outputDiv.innerHTML += '<br><span style="color: #ff0000;">Admin Panel Closed</span>';
         });
 
-        // Loď Reset - Resetování bodů
-        resetBtn.addEventListener('click', function() {
-            userPoints = 0;
-            outputDiv.innerHTML += '<br><span style="color: #ff6600;">Points have been reset to 0. Start earning again!</span>';
-            displayUserPoints();
+        // Funkce pro nákup v obchodě
+        function handleShopPurchase(item) {
+            if (item === 'item1' && userPoints >= 50) {
+                userPoints -= 50;
+                outputDiv.innerHTML += '<br><span style="color: #00ff00;">You bought Super Upgrade for 50 points!</span>';
+            } else if (item === 'item2' && userPoints >= 100) {
+                userPoints -= 100;
+                outputDiv.innerHTML += '<br><span style="color: #00ff00;">You bought Extra Code for 100 points!</span>';
+            } else if (item === 'item3' && userPoints >= 150) {
+                userPoints -= 150;
+                outputDiv.innerHTML += '<br><span style="color: #00ff00;">You bought Admin Panel Unlock for 150 points!</span>';
+                adminPanel.style.display = 'block'; // Odemknutí admin panelu
+            } else {
+                outputDiv.innerHTML += '<br><span style="color: #ff0000;">Not enough points or invalid item!</span>';
+            }
+            displayUserPoints(); // Aktualizuj body po nákupu
+        }
+
+        // Události pro tlačítka obchodu
+        document.getElementById('item1').addEventListener('click', function() {
+            handleShopPurchase('item1');
+        });
+
+        document.getElementById('item2').addEventListener('click', function() {
+            handleShopPurchase('item2');
+        });
+
+        document.getElementById('item3').addEventListener('click', function() {
+            handleShopPurchase('item3');
         });
 
         // Zobrazí úvodní text a body uživatele při načtení
