@@ -1,329 +1,159 @@
 <!DOCTYPE html>
 <html lang="cs">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Terminal Codes Offline</title>
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#010201">
-  <style>
-    :root {
-      --bg: #000;
-      --text: #0f0;
-      --muted: #3a3;
-      --panel: #061;
-      --font: 'Courier New', monospace;
-    }
-
-    html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--font);
-    }
-
-    .app {
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-      padding: 12px;
-      box-sizing: border-box;
-    }
-
-    .header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .logo {
-      font-weight: 700;
-      font-size: 18px;
-    }
-
-    .panel {
-      display: flex;
-      flex: 1;
-      gap: 12px;
-      margin-top: 12px;
-    }
-
-    .terminal, .chat, .admin-panel {
-      flex: 1;
-      background: #010201;
-      border-radius: 8px;
-      padding: 12px;
-      box-shadow: 0 8px 24px rgba(0,0,0,.6);
-      display: flex;
-      flex-direction: column;
-    }
-
-    .log {
-      flex: 1;
-      overflow: auto;
-      padding: 6px;
-      border-radius: 6px;
-      background: linear-gradient(180deg,#001000 0,#001400 100%);
-    }
-
-    .input-row {
-      display: flex;
-      gap: 8px;
-      margin-top: 8px;
-    }
-
-    .cmd {
-      flex: 1;
-      background: transparent;
-      border: 1px solid #083;
-      outline: none;
-      padding: 10px;
-      color: var(--text);
-      font-family: var(--font);
-      font-size: 14px;
-      border-radius: 6px;
-    }
-
-    .btn {
-      background: #063;
-      border: 0;
-      padding: 10px 12px;
-      border-radius: 6px;
-      color: var(--text);
-      cursor: pointer;
-    }
-
-    .side {
-      width: 320px;
-      background: #020402;
-      border-radius: 8px;
-      padding: 12px;
-    }
-
-    .stat {
-      font-size: 14px;
-      margin-bottom: 8px;
-    }
-
-    .small {
-      color: var(--muted);
-      font-size: 13px;
-    }
-
-    footer {
-      margin-top: 12px;
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    .tab-btns {
-      display: flex;
-      gap: 4px;
-      margin-bottom: 8px;
-    }
-
-    .tab-btns button {
-      flex: 1;
-      padding: 6px;
-      border-radius: 4px;
-      background: #022;
-      color: var(--text);
-      border: none;
-      cursor: pointer;
-    }
-
-    .tab-btns button.active {
-      background: #044;
-    }
-
-    @media(max-width:900px) {
-      .panel {
-        flex-direction: column;
-      }
-      .side {
-        width: 100%;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terminal App</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background-color: #1e1e1e;
+            color: #00ff00;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .terminal {
+            width: 80%;
+            height: 80%;
+            border: 2px solid #00ff00;
+            background-color: black;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .input-line {
+            display: flex;
+            justify-content: space-between;
+        }
+        .input-line input {
+            background-color: transparent;
+            color: #00ff00;
+            border: none;
+            outline: none;
+            width: 90%;
+        }
+        .admin-panel {
+            display: none;
+            position: fixed;
+            top: 20%;
+            left: 20%;
+            width: 60%;
+            height: 60%;
+            background-color: #2c2c2c;
+            border: 2px solid #00ff00;
+            padding: 20px;
+            z-index: 1000;
+        }
+        .admin-panel button {
+            background-color: #ff0000;
+            color: white;
+            padding: 10px;
+            border: none;
+            cursor: pointer;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="app">
-    <div class="header">
-      <div class="logo">TERMINAL CODES</div>
-      <div style="margin-left:auto" id="adminBadge" class="small">USER</div>
+
+    <div class="terminal">
+        <div id="output"></div>
+        <div class="input-line">
+            <span>> </span>
+            <input type="text" id="userInput" placeholder="Enter code..." />
+        </div>
     </div>
 
-    <div class="panel">
-      <div class="main-panel">
-        <div class="tab-btns">
-          <button id="tabTerminal" class="active">Terminal</button>
-          <button id="tabChat">Chat</button>
-        </div>
-
-        <div id="terminal" class="terminal">
-          <div id="log" class="log"></div>
-          <div class="input-row">
-            <input id="cmdInput" class="cmd" placeholder="zadej kód nebo příkaz" autocomplete="off">
-            <button id="sendBtn" class="btn">OK</button>
-          </div>
-        </div>
-
-        <div id="chat" class="chat" style="display:none;">
-          <div id="chatLog" class="log"></div>
-          <div class="input-row">
-            <input id="chatInput" class="cmd" placeholder="Napiš zprávu">
-            <button id="sendChatBtn" class="btn">Send</button>
-          </div>
-        </div>
-
-        <div id="adminPanel" class="admin-panel" style="display:none;">
-          <div class="small">Admin Panel - Send message to users</div>
-          <div class="input-row">
-            <input id="adminMsgUser" class="cmd" placeholder="Username (leave empty=all)">
-          </div>
-          <div class="input-row">
-            <input id="adminMsgText" class="cmd" placeholder="Text to send">
-            <button id="adminSendMsg" class="btn">Send</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="side">
-        <div class="stat">Body: <strong id="points">0</strong></div>
-        <div class="stat">Použité kódy: <span id="usedCount">0</span></div>
-        <button id="installBtn" class="btn">Přidat na plochu / Instalovat</button>
-        <div class="small">Příkazy: HELP, RESET, MYCODES, ADMIN ADD, Orsag</div>
-        <footer>Verze 0.1 — Offline Demo</footer>
-      </div>
+    <div class="admin-panel" id="adminPanel">
+        <h2>Admin Panel</h2>
+        <p>Welcome to the admin panel! This is a secret area.</p>
+        <button id="closeAdmin">Close</button>
     </div>
-  </div>
 
-  <script>
-    // --- Elements
-    const el = id => document.getElementById(id);
-    const logEl = el('log'), input = el('cmdInput'), sendBtn = el('sendBtn');
-    const pointsEl = el('points'), usedCountEl = el('usedCount'), adminBadge = el('adminBadge');
-    const chatEl = el('chat'), chatLogEl = el('chatLog'), chatInput = el('chatInput'), sendChatBtn = el('sendChatBtn');
-    const adminPanel = el('adminPanel'), adminMsgUser = el('adminMsgUser'), adminMsgText = el('adminMsgText'), adminSendMsg = el('adminSendMsg');
-    const tabTerminal = el('tabTerminal'), tabChat = el('tabChat');
-    const installBtn = el('installBtn');
+    <script>
+        const correctCodes = [
+            'ABC123', 'DEF456', 'FILIP', 'XYZ789', 'GHI012', 
+            'LMN345', 'PQR678', 'TUV910', 'JKL234', 'STU567',
+            'MNO890', 'KLM123', 'FGH456', 'IJK789', 'ABC345',
+            'XYZ123', 'RST456', 'QWE789', 'POI123', 'ASD456',
+            'ZXC789', 'BNM123', 'RTY456', 'UIO789', 'FGH123',
+            'CVB456', 'XCV789', 'JKL890', 'FGH567', 'LKM345',
+            'TGG123', 'VFR456', 'WSX789', 'YHN890', 'MNB567',
+            'PLK123', 'QAZ456', 'EDC789', 'RFG012', 'VBC234',
+            'XCV567', 'BGT890', 'HJK234', 'LOP678', 'MKO123',
+            'QWERTY', 'ZXCVBN', '123ABC', '321DEF', '456GHI',
+            '789JKL', '135QWE', '246RTY', '789POI', '357ASD',
+            '159ZXC', '753BNM', '951QAZ', '753EDC', '369FGH'
+        ]; // Expanded list of predefined codes
 
-    // --- Username
-    let username = localStorage.getItem('tc_username') || prompt('Zadej své username:') || 'Player';
-    localStorage.setItem('tc_username', username);
+        const adminPanel = document.getElementById('adminPanel');
+        const closeAdminBtn = document.getElementById('closeAdmin');
+        const outputDiv = document.getElementById('output');
+        const userInput = document.getElementById('userInput');
 
-    // --- Beep sound
-    function beep(volume=0.05,freq=800,duration=0.06){
-      try {
-        const ctx = new (window.AudioContext||window.webkitAudioContext)();
-        const o = ctx.createOscillator();
-        const g = ctx.createGain();
-        o.type='sine'; o.frequency.value=freq;
-        g.gain.value=volume; o.connect(g); g.connect(ctx.destination);
-        o.start(); g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime+duration);
-        setTimeout(()=>{o.stop();ctx.close()}, duration*1000+50);
-      } catch(e){}
-    }
+        let codeCounter = 0;
 
-    // --- Data
-    const DEFAULT_PLAYER = {points:0, usedCodes:[], isAdmin:false};
-    const DEFAULT_CODES = {
-      WELCOME:{rewardType:'points',value:50,message:'Vítej! Získal jsi 50 bodů.'},
-      BONUS:{rewardType:'points',value:20,message:'Bonusové body!'},
-      '8B':{rewardType:'points',value:30,message:'8B body získány!'},
-      Cytrena:{rewardType:'text',value:'Magikán říká: "Pamatuj si, že nic není jisté..."'},
-      Used:{rewardType:'text',value:'Tento kód jsi již použil.'},
-      END:{rewardType:'text',value:'Hra končí, zadej pass 1404 pro hodnocení.'},
-      Orsag:{rewardType:'points',value:0,message:'Vracení z adminu na user.'}
-    };
-    const SK_PLAYER='tc_player', SK_CODES='tc_codes';
+        // Generate a random index from the predefined codes
+        function getRandomCode() {
+            return correctCodes[Math.floor(Math.random() * correctCodes.length)];
+        }
 
-    let player = JSON.parse(localStorage.getItem(SK_PLAYER) || JSON.stringify(DEFAULT_PLAYER));
-    let codes = JSON.parse(localStorage.getItem(SK_CODES) || JSON.stringify(DEFAULT_CODES));
-    let messages = JSON.parse(localStorage.getItem('tc_messages') || '[]');
+        // Display random codes in the terminal
+        function displayRandomCodes() {
+            let randomCodes = '';
+            for (let i = 0; i < 30; i++) {
+                randomCodes += getRandomCode() + '<br>';
+            }
+            outputDiv.innerHTML = randomCodes;
+        }
 
-    function savePlayer(){localStorage.setItem(SK_PLAYER, JSON.stringify(player))}
-    function saveCodes(){localStorage.setItem(SK_CODES, JSON.stringify(codes))}
-    function saveMessages(){localStorage.setItem('tc_messages', JSON.stringify(messages))}
+        // Validate the entered code
+        function validateCode(code) {
+            if (correctCodes.includes(code)) {
+                if (code === 'FILIP') {
+                    adminPanel.style.display = 'block'; // Open the admin panel
+                    outputDiv.innerHTML += '<br><span style="color: #00ff00;">Correct Code! Admin Panel Unlocked!</span>';
+                } else {
+                    outputDiv.innerHTML += '<br><span style="color: #00ff00;">Correct Code!</span>';
+                }
+            } else {
+                outputDiv.innerHTML += '<br><span style="color: #ff0000;">Incorrect Code!</span>';
+            }
+            userInput.value = ''; // Clear the input
+            outputDiv.scrollTop = outputDiv.scrollHeight; // Auto-scroll to the bottom
+        }
 
-    function appendLog(text, opts={}) {
-      const p = document.createElement('p');
-      if(opts.html)p.innerHTML=text; else p.textContent=text;
-      if(opts.class)p.className=opts.class;
-      logEl.appendChild(p);
-      logEl.scrollTop = logEl.scrollHeight;
-    }
+        // Event listener for user input
+        userInput.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                const inputCode = userInput.value.trim();
+                validateCode(inputCode);
+            }
+        });
 
-    function renderStatus() {
-      pointsEl.textContent = player.points;
-      usedCountEl.textContent = player.usedCodes.length;
-      adminBadge.textContent = player.isAdmin ? 'ADMIN' : 'USER';
-    }
+        // Close the admin panel
+        closeAdminBtn.addEventListener('click', function() {
+            adminPanel.style.display = 'none';
+            outputDiv.innerHTML += '<br><span style="color: #ff0000;">Admin Panel Closed</span>';
+        });
 
-    appendLog(`Vítej ${username}. Napiš HELP pro nápovědu.`);
-    renderStatus();
+        // Generate and display random codes when the page loads
+        displayRandomCodes();
+    </script>
 
-    // --- Terminal
-    function processLine(raw){
-      const line = raw.trim(); if(!line) return;
-      appendLog('> '+line);
-      const parts = line.split(/\s+/);
-      const cmd = parts[0].toUpperCase();
-
-      if(cmd==='HELP'){ appendLog('Příkazy: HELP, RESET, MYCODES, ADMIN ADD <KOD> <TYPE> <VALUE>, Orsag'); return; }
-      if(cmd==='RESET'){ player={...DEFAULT_PLAYER}; savePlayer(); appendLog('Data resetována'); renderStatus(); return; }
-      if(cmd==='MYCODES'){ appendLog('Použité kódy: '+(player.usedCodes.length?player.usedCodes.join(', '):'(žádné)')); return; }
-      if(cmd==='ADMIN' && parts[1]?.toUpperCase()==='ADD'){
-        if(!player.isAdmin){ appendLog('Přístup odepřen'); return; }
-        if(parts.length<5){ appendLog('Chybný formát: ADMIN ADD <KOD> <TYPE> <VALUE>'); return; }
-        const code=parts[2], type=parts[3], value=parts.slice(4).join(' ');
-        codes[code]={rewardType:type,value:value,message:'Nový kód: '+code};
-        saveCodes();
-        appendLog(`Kód ${code} přidán (type=${type}, value=${value})`);
-        return;
-      }
-      if(cmd==='ORSAG'){player.isAdmin=false;savePlayer();renderStatus();appendLog('Vráceno na USER'); return;}
-
-      checkCode(line);
-    }
-
-    function checkCode(code){
-      if(player.usedCodes.includes(code)){appendLog('Tento kód už byl použit');beep();return;}
-      if(!codes[code]){appendLog('Kód neexistuje');beep();return;}
-      const info=codes[code]; player.usedCodes.push(code); savePlayer();
-      if(info.rewardType==='points'){player.points+=Number(info.value)||0;appendLog(`Získal jsi ${info.value} bodů. ${info.message}`);beep();}
-      else if(info.rewardType==='text'){appendLog(info.value||info.message);beep();}
-      renderStatus();
-    }
-
-    sendBtn.addEventListener('click',()=>{processLine(input.value);input.value='';input.focus();});
-    input.addEventListener('keydown',e=>{if(e.key==='Enter'){processLine(input.value);input.value='';}});
-
-    // --- Tabs
-    tabTerminal.addEventListener('click',()=>{terminal.style.display='flex';chatEl.style.display='none';tabTerminal.classList.add('active');tabChat.classList.remove('active');});
-    tabChat.addEventListener('click',()=>{terminal.style.display='none';chatEl.style.display='flex';tabTerminal.classList.remove('active');tabChat.classList.add('active');renderMessages();});
-
-    // --- Chat
-    function renderMessages(){chatLogEl.innerHTML='';messages.forEach(m=>{const p=document.createElement('p');p.textContent=`${m.user}: ${m.text}`;chatLogEl.appendChild(p);});chatLogEl.scrollTop=chatLogEl.scrollHeight;}
-    function broadcastMessage(msg){messages.push(msg);saveMessages();renderMessages();}
-    sendChatBtn.addEventListener('click',()=>{const text=chatInput.value.trim();if(!text)return; broadcastMessage({user:username,text}); chatInput.value=''; renderMessages();});
-    window.addEventListener('storage',()=>{renderMessages();});
-
-    // --- Admin send
-    adminSendMsg.addEventListener('click',()=>{
-      const user=adminMsgUser.value.trim(), text=adminMsgText.value.trim();
-      if(!text) return;
-      if(user) messages.push({user:'ADMIN->'+user, text}); else messages.push({user:'ADMIN', text});
-      saveMessages(); renderMessages();
-    });
-
-    // --- Install Prompt
-    let deferredPrompt; installBtn.style.display='none';
-    window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;installBtn.style.display='inline-block';});
-    installBtn.addEventListener('click',async()=>{if(!deferredPrompt) return; deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt=null; installBtn.style.display='none';});
-
-  </script>
 </body>
 </html>
