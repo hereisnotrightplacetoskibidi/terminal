@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="cs">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Terminal App with Random Codes</title>
+    <title>Admin Panel with Code Tracker</title>
     <style>
         body {
             font-family: 'Courier New', monospace;
@@ -37,32 +38,29 @@
             outline: none;
             width: 90%;
         }
-        .shop-container {
+        #adminPanel {
+            display: none;
             width: 80%;
-            max-width: 600px;
-            background-color: #2c2c2c;
+            background-color: #333;
             padding: 20px;
             border: 2px solid #00ff00;
             border-radius: 10px;
-            margin-top: 20px;
+            margin-top: 30px;
         }
-        .shop-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px;
-            background-color: #333;
-            margin: 10px 0;
-            border-radius: 5px;
-        }
-        .shop-item button {
+        .admin-button {
             background-color: #ff6600;
             color: white;
             padding: 5px 10px;
             border: none;
             cursor: pointer;
+            margin: 5px;
         }
-        .shop-item button:hover {
+        .admin-button:hover {
             background-color: #ff3300;
+        }
+        #output {
+            color: #00ff00;
+            font-size: 14px;
         }
     </style>
 </head>
@@ -76,151 +74,110 @@
         </div>
     </div>
 
-    <div class="shop-container" id="shop">
-        <h3>Welcome to the Shop!</h3>
-        <p>You have <span id="userPointsDisplay">0</span> points.</p>
-        <div class="shop-item">
-            <span>Double Body (5 minutes)</span>
-            <button id="doubleBody">Buy for 50 points</button>
-        </div>
-        <div class="shop-item">
-            <span>Extra Item</span>
-            <button id="item1">Buy for 100 points</button>
-        </div>
+    <!-- Admin Panel -->
+    <div id="adminPanel">
+        <h3>Admin Panel</h3>
+        <button class="admin-button" id="viewCodes">View All Codes</button>
+        <button class="admin-button" id="addCode">Add New Code</button>
+        <button class="admin-button" id="deleteCode">Delete Code</button>
+        <button class="admin-button" id="viewAllUsers">View All Users' Points</button>
+        <div id="adminOutput"></div>
     </div>
 
     <script>
         let userPoints = 0;
-        let doubleBodyActive = false;
-        let achievements = [];
-        let availableItems = ['item1'];
-        let userCodes = []; // Tento array bude uchovávat kódy, které uživatel odemknul.
-
+        let userCodes = [];  // Track codes entered by users
         const outputDiv = document.getElementById('output');
         const userInput = document.getElementById('userInput');
-        const userPointsDisplay = document.getElementById('userPointsDisplay');
+        const adminPanel = document.getElementById('adminPanel');
+        const adminOutput = document.getElementById('adminOutput');
 
-        // Generování náhodných kódů s body od 1 do 20
-        const randomCodes = [
-    { code: 'qws47a', points: 5, message: 'You gained 5 points for code qws47a!' },
-    { code: 'd8klF2', points: 10, message: 'You gained 10 points for code d8klF2!' },
-    { code: 'gfV1e9', points: 3, message: 'You gained 3 points for code gfV1e9!' },
-    { code: 'zWq8pT', points: 7, message: 'You gained 7 points for code zWq8pT!' },
-    { code: 'u0z6rV', points: 12, message: 'You gained 12 points for code u0z6rV!' },
-    { code: 'pM4q9W', points: 15, message: 'You gained 15 points for code pM4q9W!' },
-    { code: 'aZ7bT2', points: 2, message: 'You gained 2 points for code aZ7bT2!' },
-    { code: 's8D0t3', points: 9, message: 'You gained 9 points for code s8D0t3!' },
-    { code: 'yY4h9M', points: 1, message: 'You gained 1 point for code yY4h9M!' },
-    { code: 'n0Wp4S', points: 6, message: 'You gained 6 points for code n0Wp4S!' },
-    { code: 'mP5g7J', points: 8, message: 'You gained 8 points for code mP5g7J!' },
-    { code: 'xF3k9C', points: 10, message: 'You gained 10 points for code xF3k9C!' },
-    { code: 'u2Gb5D', points: 4, message: 'You gained 4 points for code u2Gb5D!' },
-    { code: 'cZ9kT7', points: 11, message: 'You gained 11 points for code cZ9kT7!' },
-    { code: 'bP6j3W', points: 5, message: 'You gained 5 points for code bP6j3W!' },
-    { code: 'eX8h2M', points: 13, message: 'You gained 13 points for code eX8h2M!' },
-    { code: 'rB9q6A', points: 7, message: 'You gained 7 points for code rB9q6A!' },
-    { code: 'zL7w3Y', points: 9, message: 'You gained 9 points for code zL7w3Y!' },
-    { code: 'jK5c2V', points: 15, message: 'You gained 15 points for code jK5c2V!' },
-    { code: 'tB8d4W', points: 20, message: 'You gained 20 points for code tB8d4W!' },
-    { code: 'wX7n9T', points: 6, message: 'You gained 6 points for code wX7n9T!' },
-    { code: 'qD4h8R', points: 8, message: 'You gained 8 points for code qD4h8R!' },
-    { code: 'zN6g9M', points: 12, message: 'You gained 12 points for code zN6g9M!' },
-    { code: 'tJ3f8K', points: 10, message: 'You gained 10 points for code tJ3f8K!' },
-    { code: 'oL7b9Z', points: 5, message: 'You gained 5 points for code oL7b9Z!' },
-    { code: 'iH9m3W', points: 4, message: 'You gained 4 points for code iH9m3W!' },
-    { code: 'sF3d5Y', points: 7, message: 'You gained 7 points for code sF3d5Y!' },
-    { code: 'bZ5q7R', points: 2, message: 'You gained 2 points for code bZ5q7R!' },
-    { code: 'dK8v1N', points: 6, message: 'You gained 6 points for code dK8v1N!' },
-    { code: 'jR7p2V', points: 3, message: 'You gained 3 points for code jR7p2V!' },
-    { code: 'mG9s4T', points: 9, message: 'You gained 9 points for code mG9s4T!' },
-    { code: 'tZ8j7X', points: 5, message: 'You gained 5 points for code tZ8j7X!' },
-    { code: 'wN4r1B', points: 11, message: 'You gained 11 points for code wN4r1B!' },
-    { code: 'oJ2g8S', points: 14, message: 'You gained 14 points for code oJ2g8S!' },
-    { code: 'bV7h3C', points: 20, message: 'You gained 20 points for code bV7h3C!' },
-    { code: 'kP6y2J', points: 12, message: 'You gained 12 points for code kP6y2J!' },
-    { code: 'sW9h3F', points: 4, message: 'You gained 4 points for code sW9h3F!' },
-    { code: 'zP7j2M', points: 6, message: 'You gained 6 points for code zP7j2M!' },
-    { code: 'mQ1t5B', points: 9, message: 'You gained 9 points for code mQ1t5B!' },
-    { code: 'rK4y6T', points: 7, message: 'You gained 7 points for code rK4y6T!' },
-    { code: 'nM3c8Z', points: 10, message: 'You gained 10 points for code nM3c8Z!' },
-    { code: 'lX9y1T', points: 5, message: 'You gained 5 points for code lX9y1T!' },
-    { code: 'gQ2b4J', points: 8, message: 'You gained 8 points for code gQ2b4J!' },
-    { code: 'jB8p7K', points: 5, message: 'You gained 5 points for code jB8p7K!' },
-    { code: 'zX7n1W', points: 10, message: 'You gained 10 points for code zX7n1W!' },
-    { code: 'kV9r6S', points: 4, message: 'You gained 4 points for code kV9r6S!' }
-];
-        // Funkce pro zobrazení bodů
+        // Load data from localStorage
+        if (localStorage.getItem('userCodes')) {
+            userCodes = JSON.parse(localStorage.getItem('userCodes'));
+        }
+
+        // Helper to display user points
         function displayUserPoints() {
-            userPointsDisplay.textContent = userPoints;
+            outputDiv.innerHTML = `You have ${userPoints} points.`;
         }
 
-        // Funkce pro ověření kódu a přidání bodů nebo odemčení
+        // Admin Panel Functions
+
+        // Show all entered codes
+        function viewAllCodes() {
+            let codeList = "<h4>All Entered Codes:</h4>";
+            userCodes.forEach((codeData, index) => {
+                codeList += `<p>Code: ${codeData.code} | Points: ${codeData.points} | Message: ${codeData.message}</p>`;
+            });
+            adminOutput.innerHTML = codeList;
+        }
+
+        // Add a new code (Admin Only)
+        function addNewCode() {
+            const code = prompt('Enter the new code:');
+            const points = parseInt(prompt('Enter the points for the code:'));
+            const message = prompt('Enter the message for the code:');
+
+            const newCode = { code, points, message };
+            userCodes.push(newCode);
+            localStorage.setItem('userCodes', JSON.stringify(userCodes));
+            adminOutput.innerHTML = `<p>New code ${code} added successfully!</p>`;
+        }
+
+        // Delete a code (Admin Only)
+        function deleteCode() {
+            const codeToDelete = prompt('Enter the code you want to delete:');
+            userCodes = userCodes.filter(codeData => codeData.code !== codeToDelete);
+            localStorage.setItem('userCodes', JSON.stringify(userCodes));
+            adminOutput.innerHTML = `<p>Code ${codeToDelete} deleted successfully!</p>`;
+        }
+
+        // View all users' points (Admin Only)
+        function viewAllUsersPoints() {
+            adminOutput.innerHTML = `<h4>User Points:</h4><p>You currently have ${userPoints} points.</p>`;
+        }
+
+        // Validate Code Function (for normal users)
         function validateCode(code) {
-            const foundCode = randomCodes.find(c => c.code === code);
+            const foundCode = userCodes.find(c => c.code === code);
             if (foundCode) {
-                if (!userCodes.includes(foundCode.code)) {
-                    userCodes.push(foundCode.code);
-                    userPoints += foundCode.points;
-                    outputDiv.innerHTML += `<br><span style="color: #00ff00;">${foundCode.message}</span>`;
-                    displayUserPoints();
-                } else {
-                    outputDiv.innerHTML += '<br><span style="color: #ff0000;">Code already used!</span>';
-                }
+                userPoints += foundCode.points;
+                outputDiv.innerHTML = `You gained ${foundCode.points} points for code ${foundCode.code}!`;
+                localStorage.setItem('userPoints', userPoints);
             } else {
-                outputDiv.innerHTML += '<br><span style="color: #ff0000;">Invalid code!</span>';
-            }
-            userInput.value = ''; // Resetuje input
-            outputDiv.scrollTop = outputDiv.scrollHeight;
-        }
-
-        // Funkce pro aktivaci Double Body
-        function activateDoubleBody() {
-            if (userPoints >= 50 && !doubleBodyActive) {
-                userPoints -= 50;
-                doubleBodyActive = true;
-                outputDiv.innerHTML += '<br><span style="color: #00ff00;">Double Body Activated for 5 minutes!</span>';
-                setTimeout(() => {
-                    doubleBodyActive = false;
-                    outputDiv.innerHTML += '<br><span style="color: #ff0000;">Double Body deactivated.</span>';
-                }, 300000); // 5 minut
-                displayUserPoints();
-            } else {
-                outputDiv.innerHTML += '<br><span style="color: #ff0000;">Not enough points or Double Body already active.</span>';
-            }
-        }
-
-        // Funkce pro nákup v obchodě
-        function handleShopPurchase(item) {
-            if (item === 'doubleBody' && userPoints >= 50) {
-                activateDoubleBody();
-            } else if (item === 'item1' && userPoints >= 100) {
-                userPoints -= 100;
-                outputDiv.innerHTML += '<br><span style="color: #00ff00;">You bought Extra Item for 100 points!</span>';
-            } else {
-                outputDiv.innerHTML += '<br><span style="color: #ff0000;">Not enough points or invalid item!</span>';
+                outputDiv.innerHTML = 'Invalid code!';
             }
             displayUserPoints();
         }
 
-        // Události pro zadání kódu a nákup
+        // Check if user typed the special "Filip" code to open the admin panel
+        function openAdminPanel(code) {
+            if (code === 'Filip') {
+                adminPanel.style.display = 'block';  // Show the admin panel
+                outputDiv.innerHTML = 'Admin Panel Activated!';
+            } else {
+                outputDiv.innerHTML = 'Invalid code!';
+            }
+        }
+
+        // Event Listener for user input
         userInput.addEventListener('keydown', function(event) {
             if (event.key === 'Enter') {
                 const inputCode = userInput.value.trim();
-                validateCode(inputCode);
+                validateCode(inputCode);  // Validate the entered code for regular users
+                openAdminPanel(inputCode);  // Check if it's the admin code "Filip"
+                userInput.value = ''; // Clear input after submission
             }
         });
 
-        // Události pro tlačítka v obchodě
-        document.getElementById('doubleBody').addEventListener('click', function() {
-            handleShopPurchase('doubleBody');
-        });
+        // Event Listeners for Admin Panel Buttons
+        document.getElementById('viewCodes').addEventListener('click', viewAllCodes);
+        document.getElementById('addCode').addEventListener('click', addNewCode);
+        document.getElementById('deleteCode').addEventListener('click', deleteCode);
+        document.getElementById('viewAllUsers').addEventListener('click', viewAllUsersPoints);
 
-        document.getElementById('item1').addEventListener('click', function() {
-            handleShopPurchase('item1');
-        });
-
-        // Zobrazí úvodní text a body uživatele při načtení
-        outputDiv.innerHTML = '<span>Welcome to the terminal! Enter a valid code to earn points or unlock achievements.</span>';
+        // Initial output
         displayUserPoints();
     </script>
 
