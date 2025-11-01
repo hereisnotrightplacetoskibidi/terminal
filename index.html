@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Terminal App with Shop</title>
+    <title>Terminal App with Random Codes</title>
     <style>
         body {
             font-family: 'Courier New', monospace;
@@ -64,23 +64,6 @@
         .shop-item button:hover {
             background-color: #ff3300;
         }
-        .admin-panel {
-            display: none;
-            background-color: #333;
-            padding: 20px;
-            border: 2px solid #ff6600;
-            margin-top: 20px;
-            border-radius: 10px;
-            width: 80%;
-            max-width: 600px;
-        }
-        .admin-panel ul {
-            list-style-type: none;
-            padding-left: 0;
-        }
-        .admin-panel ul li {
-            color: #ff6600;
-        }
     </style>
 </head>
 <body>
@@ -106,13 +89,6 @@
         </div>
     </div>
 
-    <!-- Admin Panel (skrytý panel) -->
-    <div class="admin-panel" id="adminPanel">
-        <h3>Admin Panel - Kódy</h3>
-        <ul id="codeList"></ul>
-        <button id="closeAdminPanel">Close Admin Panel</button>
-    </div>
-
     <script>
         let userPoints = 0;
         let doubleBodyActive = false;
@@ -123,27 +99,48 @@
         const outputDiv = document.getElementById('output');
         const userInput = document.getElementById('userInput');
         const userPointsDisplay = document.getElementById('userPointsDisplay');
-        const codeList = document.getElementById('codeList');
-        const adminPanel = document.getElementById('adminPanel');
-        const closeAdminPanelButton = document.getElementById('closeAdminPanel');
 
-        // Zobrazit panel s kódy v admin panelu
-        function displayAdminCodes() {
-            codeList.innerHTML = '';  // Vyčistí seznam kódů
-            const allCodes = ['DOUBLEBODY', 'ACHIEVEMENT1', 'ITEM1']; // Možné kódy
-            allCodes.forEach(code => {
-                const li = document.createElement('li');
-                li.textContent = code;
-                codeList.appendChild(li);
-            });
-        }
+        // Generování náhodných kódů s body od 1 do 20
+        const randomCodes = [
+            { code: 'RANDOM1', points: 1, message: 'You gained 1 point!' },
+            { code: 'RANDOM2', points: 2, message: 'You gained 2 points!' },
+            { code: 'RANDOM5', points: 5, message: 'You gained 5 points!' },
+            { code: 'RANDOM10', points: 10, message: 'You gained 10 points!' },
+            { code: 'RANDOM15', points: 15, message: 'You gained 15 points!' },
+            { code: 'RANDOM20', points: 20, message: 'You gained 20 points!' },
+            { code: 'BONUS100', points: 100, message: 'You unlocked an extra item!' },
+            { code: 'DOUBLEBODY', points: 0, message: 'You unlocked Double Body for 5 minutes!' },
+            { code: 'MYSTERYCODE', points: 10, message: 'You gained 10 points and a mystery bonus!' },
+            { code: 'ACHIEVEMENT1', points: 0, message: 'First Achievement Unlocked!' },
+            { code: 'SUPERSPEED', points: 0, message: 'Speed Boost Activated!' },
+            { code: 'LUXURY', points: 20, message: 'You gained 20 points!' }
+        ];
 
         // Funkce pro zobrazení bodů
         function displayUserPoints() {
             userPointsDisplay.textContent = userPoints;
         }
 
-        // Aktivace Double Body
+        // Funkce pro ověření kódu a přidání bodů nebo odemčení
+        function validateCode(code) {
+            const foundCode = randomCodes.find(c => c.code === code);
+            if (foundCode) {
+                if (!userCodes.includes(foundCode.code)) {
+                    userCodes.push(foundCode.code);
+                    userPoints += foundCode.points;
+                    outputDiv.innerHTML += `<br><span style="color: #00ff00;">${foundCode.message}</span>`;
+                    displayUserPoints();
+                } else {
+                    outputDiv.innerHTML += '<br><span style="color: #ff0000;">Code already used!</span>';
+                }
+            } else {
+                outputDiv.innerHTML += '<br><span style="color: #ff0000;">Invalid code!</span>';
+            }
+            userInput.value = ''; // Resetuje input
+            outputDiv.scrollTop = outputDiv.scrollHeight;
+        }
+
+        // Funkce pro aktivaci Double Body
         function activateDoubleBody() {
             if (userPoints >= 50 && !doubleBodyActive) {
                 userPoints -= 50;
@@ -157,28 +154,6 @@
             } else {
                 outputDiv.innerHTML += '<br><span style="color: #ff0000;">Not enough points or Double Body already active.</span>';
             }
-        }
-
-        // Funkce pro validaci a spuštění kódů
-        function validateCode(code) {
-            if (code === 'Filip') {
-                adminPanel.style.display = 'block'; // Zobrazí admin panel
-                displayAdminCodes(); // Načte kódy do admin panelu
-                outputDiv.innerHTML += '<br><span style="color: #00ff00;">Admin Panel Opened.</span>';
-            } else if (code === 'DOUBLEBODY' && !userCodes.includes('DOUBLEBODY')) {
-                userCodes.push('DOUBLEBODY');
-                outputDiv.innerHTML += '<br><span style="color: #00ff00;">You unlocked Double Body!</span>';
-                userPoints += 50;
-            } else if (code === 'ACHIEVEMENT1' && !userCodes.includes('ACHIEVEMENT1')) {
-                userCodes.push('ACHIEVEMENT1');
-                outputDiv.innerHTML += '<br><span style="color: #00ff00;">Achievement Unlocked: First Achievement!</span>';
-                userPoints += 100;
-            } else {
-                outputDiv.innerHTML += '<br><span style="color: #ff0000;">Incorrect or already unlocked code!</span>';
-            }
-            displayUserPoints();
-            userInput.value = '';  // Resetuje input
-            outputDiv.scrollTop = outputDiv.scrollHeight;
         }
 
         // Funkce pro nákup v obchodě
@@ -207,14 +182,8 @@
             handleShopPurchase('doubleBody');
         });
 
-document.getElementById('item1').addEventListener('click', function() {
+        document.getElementById('item1').addEventListener('click', function() {
             handleShopPurchase('item1');
-        });
-
-        // Funkce pro zavření Admin panelu
-        closeAdminPanelButton.addEventListener('click', function() {
-            adminPanel.style.display = 'none'; // Skryje Admin Panel
-            outputDiv.innerHTML += '<br><span style="color: #ff6600;">Admin Panel Closed.</span>';
         });
 
         // Zobrazí úvodní text a body uživatele při načtení
